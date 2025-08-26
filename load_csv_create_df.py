@@ -13,24 +13,19 @@ def load_data():
         "Player Career Info.csv"
     ]
 
-    # Only read the 5 CSVs you care about, in that order
     file_paths = [path / name for name in file_names]
 
     dfs = []
     for p in file_paths:
         try:
             dfs.append(pd.read_csv(p, sep=",", encoding="utf-8"))
-        except UnicodeDecodeError:
-            # fallback for Windows-1252/Latin-1 files
+        except UnicodeDecodeError: #fallback to avoid errors
             dfs.append(pd.read_csv(p, sep=",", encoding="latin1"))
 
     return dfs
 
 
-## Merge
-
-
-# Hector
+## Reduce columns, create player ID, merge dfs
 
 def column_reduced(list_dataframe,year):
     list_new_df = []
@@ -89,7 +84,6 @@ def player_full_data_df(list_dataframe,year):
     daaaamboyyyy = Player_Totals_df_year.merge(Player_Season_Info_df_year,how= 'left',on='ID').merge(Player_Play_By_Play_df_year,how= 'left',on='ID').merge(Player_Shooting_df_year,how= 'left',on='ID').merge(Player_Career_Info_Reduced_df,how = 'left',on='player_id')
 
     return daaaamboyyyy
-
 
 dfs = load_data()
 
