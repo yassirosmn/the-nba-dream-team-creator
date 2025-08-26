@@ -24,7 +24,6 @@ def load_data():
 
     return dfs
 
-
 ## Reduce columns, create player ID, merge dfs
 
 def column_reduced(list_dataframe,year):
@@ -85,6 +84,15 @@ def player_full_data_df(list_dataframe,year):
 
     return daaaamboyyyy
 
+
+## Return full merged dataset from 1997
+
 dfs = load_data()
 
 player_full_data = player_full_data_df(dfs, 1997)
+
+
+## Return filtered dataset on starting_5 from 1997
+
+def player_starting_5_data(dfs, year):
+    return player_full_data_df(dfs, year).query("starting_5 == 1")
