@@ -1,0 +1,13 @@
+pytest
+pylint
+ipdb
+jupyterlab
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+keras
+tensorflow
+plotly
+xgboost
