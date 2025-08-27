@@ -8,11 +8,11 @@ from pathlib import Path
 
 FILE_PATH=Path("raw_data/")
 
-# Error message if file_path invalid
-assert FILE_PATH.exists(), "file_path does not exist"
-
 # If user defined FILE_PATH - use it, otherwise use by default raw_data
 FILE_PATH=Path(os.environ.get("FILE_PATH", "raw_data/"))
+
+# Error message if file_path invalid
+assert FILE_PATH.exists(), "file_path does not exist"
 
 # to do once done
 ## api
