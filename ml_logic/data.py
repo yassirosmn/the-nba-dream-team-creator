@@ -1,5 +1,6 @@
 from pathlib import Path
 import pandas as pd
+import numpy as np
 
 
 def load_data():
@@ -88,6 +89,62 @@ def player_full_data_df(list_dataframe,year):
 def player_starting_5_data(dfs, year):
     return player_full_data_df(dfs, year).query("starting_5 == 1")
 
+def y_base_creation(year):
+    #########################
+    #### translate_dict #####
+    #########################
+
+    # creation of a translation dict : {'full team name' : 'abreviation'}
+    translate= pd.read_csv('raw_data/Team Abbrev.csv')
+
+    # drop unusefull columns
+    translate = translate.drop(columns=['season','lg','playoffs']).set_index('team').to_dict()['abbreviation']
+
+
+    #######################
+    #### final_scores #####
+    #######################
+
+    final_scores = pd.read_csv('raw_data/Team_Playoffs_winner_stats.csv')
+
+    # drop unusefull columns
+    final_scores.drop(columns=['Lg','Dates','Ranking end of season'], inplace=True)
+
+    # slicing to keep only season after 1997 (year)
+    final_scores=final_scores.query(f'Yr >= {year}')
+
+    # translate Team names into abreviation in final_scores
+    final_scores['Team (winner of playoffs)']=final_scores['Team (winner of playoffs)'].apply(lambda team : translate[team.strip()])
+
+    # PM (primary key) column creation for y_base
+    final_scores['PM'] = final_scores.apply(lambda row : str(row['Yr']) + row['Team (winner of playoffs)'], axis = 1)
+    final_scores['one']= 1
+
+
+    #########################
+    #### Players season #####
+    #########################
+
+    Player_Season_Info_df = pd.read_csv('raw_data/Player Season Info.csv')
+
+    # Creation of the base of y
+    y_base = Player_Season_Info_df[['season','team']].query(f'season >= {year}').copy(deep = True)
+
+    # PM (primary key) column creation for final_scores
+    y_base['PM']=y_base.apply(lambda row : str(row['season']) + row['team'], axis = 1)
+
+    # Merge final_scores & y-base
+    y_base = y_base.merge(final_scores[['PM','one']], how = "left", on='PM')
+    y_base.value_counts()
+
+    # replace Nan values of 'one' column (merge only add '1' to players that won the playoff this year, others have Nan values)
+    y_base['one'] = y_base['one'].replace(np.nan, 0)
+
+    # y_base.shape ==> 32606,1 | y.base.columns ==> 'one' | y_base.value_counts ==> 0.0 : 32213 ; 1.0 : 393
+    y_base = y_base[['one']].copy(deep=True)
+
+    return y_base
+
 
 # Tests
 if __name__ == "__main__":
@@ -95,4 +152,6 @@ if __name__ == "__main__":
 
     player_full_data = player_full_data_df(dfs, 1997)
 
-    print("test good")
+    y_base = y_base_creation(1997)
+
+    print("Test good (✅ pour Flavian)")
