@@ -203,7 +203,14 @@ def y_base_creation(year):
     return y_base
 
 
-# new y_
+# new y
+
+# cette fonction prend pour entrée une année et renvoie un dataframe
+# avec un pourcentage de la performance de l'équipe pour chaque joueur
+# après l'année après celle entrée en parametre
+
+# plus la valeur tend vers 1 plus l'équipe à été performance dans l'année
+# (1 = premier de conférence + victoire aux playoffs)
 def y_creator(year):
     #########################
     #### translate_dict #####
