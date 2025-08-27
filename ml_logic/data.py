@@ -1,6 +1,8 @@
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from params import *
+
 
 ##################  CONSTANTS  #####################
 
@@ -58,7 +60,8 @@ DTYPES_RAW = {'ID': 'object', 'season': 'int64', 'lg': 'object',
 ##################  CODE  #####################
 
 def load_data():
-    path = Path(os.getenv("FILE_PATH")).expanduser()
+
+    path = FILE_PATH
 
     file_names = [
         "Player Totals.csv",
@@ -74,7 +77,7 @@ def load_data():
     for p in file_paths:
         try:
             dfs.append(pd.read_csv(p, sep=",", encoding="utf-8"))
-        except UnicodeDecodeError: #fallback to avoid errors
+        except UnicodeDecodeError: #we had errors, we added this to avoid errors
             dfs.append(pd.read_csv(p, sep=",", encoding="latin1"))
 
     return dfs
@@ -202,6 +205,7 @@ def y_base_creation(year):
 
 # Tests
 if __name__ == "__main__":
+
     dfs = load_data()
 
     player_full_data = player_full_data_df(dfs, 1997)
