@@ -11,3 +11,5 @@ keras
 tensorflow
 plotly
 xgboost
+pathlib
+dotenv
