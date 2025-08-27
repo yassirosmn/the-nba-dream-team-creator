@@ -2,9 +2,63 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+##################  CONSTANTS  #####################
+
+COLUMN_NAMES_RAW = ['ID', 'season', 'lg', 'player', 'player_id', 'age', 'team', 'pos', 'g',
+       'gs', 'mp', 'fg', 'fga', 'fg_percent', 'x3p', 'x3pa', 'x3p_percent',
+       'x2p', 'x2pa', 'x2p_percent', 'e_fg_percent', 'ft', 'fta', 'ft_percent',
+       'orb', 'drb', 'trb', 'ast', 'stl', 'blk', 'tov', 'pf', 'pts', 'trp_dbl',
+       'rate_rank', 'starting_5', 'experience', 'pg_percent', 'sg_percent',
+       'sf_percent', 'pf_percent', 'c_percent',
+       'on_court_plus_minus_per_100_poss', 'net_plus_minus_per_100_poss',
+       'bad_pass_turnover', 'lost_ball_turnover', 'shooting_foul_committed',
+       'offensive_foul_committed', 'shooting_foul_drawn',
+       'offensive_foul_drawn', 'points_generated_by_assists', 'and1',
+       'fga_blocked', 'avg_dist_fga', 'percent_fga_from_x2p_range',
+       'percent_fga_from_x0_3_range', 'percent_fga_from_x3_10_range',
+       'percent_fga_from_x10_16_range', 'percent_fga_from_x16_3p_range',
+       'percent_fga_from_x3p_range', 'fg_percent_from_x2p_range',
+       'fg_percent_from_x0_3_range', 'fg_percent_from_x3_10_range',
+       'fg_percent_from_x10_16_range', 'fg_percent_from_x16_3p_range',
+       'fg_percent_from_x3p_range', 'percent_assisted_x2p_fg',
+       'percent_assisted_x3p_fg', 'percent_dunks_of_fga', 'num_of_dunks',
+       'percent_corner_3s_of_3pa', 'corner_3_point_percent',
+       'num_heaves_attempted', 'num_heaves_made', 'ht_in_in', 'wt']
+
+DTYPES_RAW = {'ID': 'object', 'season': 'int64', 'lg': 'object',
+              'player': 'object', 'player_id': 'object', 'age': 'float64',
+              'team': 'object', 'pos': 'object', 'g': 'int64', 'gs': 'float64',
+              'mp': 'float64', 'fg': 'int64', 'fga': 'int64', 'fg_percent': 'float64',
+              'x3p': 'float64', 'x3pa': 'float64', 'x3p_percent': 'float64',
+              'x2p': 'float64', 'x2pa': 'float64', 'x2p_percent': 'float64',
+              'e_fg_percent': 'float64', 'ft': 'int64', 'fta': 'int64', 'ft_percent': 'float64',
+              'orb': 'float64', 'drb': 'float64', 'trb': 'float64', 'ast': 'int64',
+              'stl': 'float64', 'blk': 'float64', 'tov': 'float64', 'pf': 'float64',
+              'pts': 'int64', 'trp_dbl': 'float64', 'rate_rank': 'float64',
+              'starting_5': 'int64', 'experience': 'int64', 'pg_percent': 'float64',
+              'sg_percent': 'float64', 'sf_percent': 'float64', 'pf_percent': 'float64',
+              'c_percent': 'float64', 'on_court_plus_minus_per_100_poss': 'float64',
+              'net_plus_minus_per_100_poss': 'float64', 'bad_pass_turnover': 'int64',
+              'lost_ball_turnover': 'int64', 'shooting_foul_committed': 'int64',
+              'offensive_foul_committed': 'int64', 'shooting_foul_drawn': 'int64',
+              'offensive_foul_drawn': 'float64', 'points_generated_by_assists': 'int64',
+              'and1': 'int64', 'fga_blocked': 'int64', 'avg_dist_fga': 'float64',
+              'percent_fga_from_x2p_range': 'float64', 'percent_fga_from_x0_3_range': 'float64',
+              'percent_fga_from_x3_10_range': 'float64', 'percent_fga_from_x10_16_range': 'float64',
+              'percent_fga_from_x16_3p_range': 'float64', 'percent_fga_from_x3p_range': 'float64',
+              'fg_percent_from_x2p_range': 'float64', 'fg_percent_from_x0_3_range': 'float64',
+              'fg_percent_from_x3_10_range': 'float64', 'fg_percent_from_x10_16_range': 'float64',
+              'fg_percent_from_x16_3p_range': 'float64', 'fg_percent_from_x3p_range': 'float64',
+              'percent_assisted_x2p_fg': 'float64', 'percent_assisted_x3p_fg': 'float64',
+              'percent_dunks_of_fga': 'float64', 'num_of_dunks': 'int64', 'percent_corner_3s_of_3pa': 'float64',
+              'corner_3_point_percent': 'float64', 'num_heaves_attempted': 'int64', 'num_heaves_made': 'int64',
+              'ht_in_in': 'int64', 'wt': 'float64'}
+
+
+##################  CODE  #####################
 
 def load_data():
-    path = Path("~/code/yassirosmn/the-nba-dream-team-creator/raw_data").expanduser()
+    path = Path(os.getenv("FILE_PATH")).expanduser()
 
     file_names = [
         "Player Totals.csv",
