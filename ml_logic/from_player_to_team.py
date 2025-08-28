@@ -8,7 +8,8 @@ import pandas as pd
 list_dataframe = load_data()
 players_full_data = player_full_data_df(list_dataframe, 1997)
 
-dict_shaytan = {
+# {primary_key_season_team : (conf ranking + playoffs score) / 23}
+dict_id_to_y = {
     "2022MIL": 0.30434782608695654,
     "2022BOS": 0.6086956521739131,
     "2021BRK": 0.34782608695652173,
@@ -213,13 +214,13 @@ def get_team_season_stats(season: int, team: str, stats_filtered: list = ["pts",
 
 # Get all data per season and per team
 
-def get_all_season_team_stats(full_dataset):
+def get_all_season_team_stats(X_preprocessed: pd.DataFrame):
     X = []
-    for season in full_dataset["season"].unique():
-        for team in full_dataset["team"].unique():
+    for season in X_preprocessed["season"].unique():
+        for team in X_preprocessed["team"].unique():
             team_season_stats = get_team_season_stats(season, team)
-            if f'{season} + {team}' in dict_shaytan.keys():
-                team_season_stats.append(dict_shaytan[f'{season} + {team}'])
+            if f'{season} + {team}' in dict_id_to_y.keys():
+                team_season_stats.append(dict_id_to_y[f'{season} + {team}'])
             else :
                 team_season_stats.append(0.0)
             X.append(team_season_stats)
@@ -227,14 +228,27 @@ def get_all_season_team_stats(full_dataset):
 
 # Tests
 if __name__ == "__main__":
-    print(get_starters_stats_per_season_per_team(2025, "LAL"))
-    print(type(get_starters_stats_per_season_per_team(2025, "LAL")))
-    print(get_team_season_stats(2025, "LAL"))
-    print(type(get_team_season_stats(2025, "LAL")))
-    print(pd.DataFrame(get_all_season_team_stats(players_full_data)))
-    cpt = 0
-    for elmt in get_all_season_team_stats(players_full_data) :
-        cpt +=1
-    print("✅",cpt)
+    # print(get_starters_stats_per_season_per_team(2025, "LAL"))
+    # print(type(get_starters_stats_per_season_per_team(2025, "LAL")))
+    # print(get_team_season_stats(2025, "LAL"))
+    # print(type(get_team_season_stats(2025, "LAL")))
+    # print(pd.DataFrame(get_all_season_team_stats(players_full_data)))
+    # cpt = 0
+            # print("✅",elmt)
+
+    # for player in get_all_season_team_stats(players_full_data) :
+    #     for stat in player :
+
+    my_list_team = []
+    my_list_final = []
+    for team in get_all_season_team_stats(players_full_data) :
+        for player in team :
+            # print(type(player))
+            if type(player) != float :
+                my_list_team.extend(player)
+        my_list_final.append(my_list_team)
+        my_list_team = []
+    print(my_list_final[0])
+    # print(get_all_season_team_stats(players_full_data))
 
     print("Test good (✅ pour Flavian)")
