@@ -17,13 +17,13 @@ def initialize_model(model_type, input_shape : tuple = None) -> Model:
     return model
 
 
-def fit_model(X,y) :
+def fit_model(model, X, y) :
     model.fit(X,y)
     return model
 
 
 
-def score_model(X,y) :
+def score_model(model, X, y) :
     return model.score(X,y)
 
 if __name__ == "__main__":
