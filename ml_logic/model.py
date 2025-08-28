@@ -16,68 +16,56 @@ def initialize_model(model_type, input_shape : tuple = None) -> Model:
 
     return model
 
-def compile_model(model: Model, learning_rate=0.0005) -> Model:
-    """
-    Compile the Neural Network
-    """
-    optimizer = optimizers.Adam(learning_rate=learning_rate)
-    model.compile(loss="mean_squared_error", optimizer=optimizer, metrics=["mae"])
 
+def fit_model(X,y) :
+    model.fit(X,y)
     return model
 
-def train_model(
-        model: Model,
-        X: np.ndarray,
-        y: np.ndarray,
-        batch_size=256,
-        patience=2,
-        validation_data=None, # overrides validation_split
-        validation_split=0.3
-    ) -> Tuple[Model, dict]:
-    """
-    Fit the model and return a tuple (fitted_model, history)
-    """
 
-    es = EarlyStopping(
-        monitor="val_loss",
-        patience=patience,
-        restore_best_weights=True,
-        verbose=1
-    )
 
-    history = model.fit(
-        X,
-        y,
-        validation_data=validation_data,
-        validation_split=validation_split,
-        epochs=100,
-        batch_size=batch_size,
-        callbacks=[es],
-        verbose=0
-    )
+def score_model(X,y) :
+    return model.score(X,y)
 
-    return model, history
+if __name__ == "__main__":
 
-def evaluate_model(
-        model: Model,
-        X: np.ndarray,
-        y: np.ndarray,
-        batch_size=64
-    ) -> Tuple[Model, dict]:
-    """
-    Evaluate trained model performance on the dataset
-    """
+    from data import load_data, player_full_data_df, y_creator
+    from preprocessor import preprocess_features
+    from sklearn.linear_model import LogisticRegression, LinearRegression
+    from xgboost import XGBRegressor
+    import pandas as pd
+    from sklearn.model_selection import cross_validate
 
-    metrics = model.evaluate(
-        x=X,
-        y=y,
-        batch_size=batch_size,
-        verbose=0,
-        # callbacks=None,
-        return_dict=True
-    )
 
-    loss = metrics["loss"]
-    mae = metrics["mae"]
+    dfs = load_data()
+    X = player_full_data_df(dfs, 1997)
 
-    return metrics
+    y = y_creator(1997)
+
+    X_preprocessed = preprocess_features(X)
+
+    model = initialize_model(model_type= XGBRegressor(), input_shape = None)
+
+    model.fit(X_preprocessed,y)
+
+    # model = compile_model(model=model, learning_rate=0.0005)
+
+    # model = train_model(model=model,
+    #                              X=X_preprocessed,
+    #                              y=y,
+    #                              batch_size=256,
+    #                              patience=2,
+    #                              validation_data=None,
+    #                              validation_split=0.3)
+
+    # metrics = evaluate_model(model = model,
+    #                          X = X_preprocessed,
+    #                          y = y,
+    #                          batch_size=64)
+
+    print(model.score(X_preprocessed,y))
+
+    # cv_results = cross_validate(model, X_preprocessed, y, cv=5)
+
+    # accuracy = cv_results["test_score"].mean()
+
+    print("Test good (✅ pour Flavian)")

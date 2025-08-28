@@ -1,23 +1,25 @@
 # Imports standards
 import numpy as np
 import pandas as pd
-# from colorama import Fore, Style
 
 # Import preprocessing
 from sklearn.impute import KNNImputer
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import RobustScaler
+from params import *
 
 
 def preprocess_features(X: pd.DataFrame) -> np.ndarray:
+
     def create_preprocessor() -> ColumnTransformer:
         """
             Scikit-learn pipeline that transforms a cleaned dataset of shape (_, XXXXX)
             into a preprocessed one of fixed shape (_, XXXX).
         """
+        X_dropped = X.drop(columns=COLUMNS_TO_DROP)
 
-        X_num = X.select_dtypes(include="number")
+        X_num = X_dropped.select_dtypes(include="number")
 
         robust_features = X_num.columns #Insérer noms de features...
 
@@ -34,11 +36,9 @@ def preprocess_features(X: pd.DataFrame) -> np.ndarray:
         preprocessor = ColumnTransformer([
             ("num_pipeline", numerical_pipeline, make_column_selector(dtype_include="number")) # num_features
             # ("cat_pipeline", categorical_pipeline, make_column_selector(dtype_exclude="number")) # cat_features
-        ], remainder="passthrough").set_output(transform="pandas")
+        ]).set_output(transform="pandas")
 
         return preprocessor
-
-    # print(Fore.BLUE + "\nPreprocessing features..." + Style.RESET_ALL)
 
     preprocessor = create_preprocessor()
     X_processed = preprocessor.fit_transform(X)
