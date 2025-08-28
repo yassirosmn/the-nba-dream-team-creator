@@ -40,4 +40,3 @@ if __name__ == "__main__":
     dfs = load_data()
     X = player_full_data_df(dfs, 1997)
     X_processed = preprocess_features(X)
-    print(type(X_processed))
