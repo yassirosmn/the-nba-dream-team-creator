@@ -6,6 +6,7 @@ from params import *
 # Import data
 from ml_logic.data import load_data, player_full_data_df, y_creator
 from ml_logic.model import initialize_model, fit_model, score_model
+from ml_logic.from_player_to_team import get_all_season_team_stats
 
 # Import preprocessing function
 from ml_logic.preprocessor import preprocess_features
@@ -30,16 +31,33 @@ def train(model_type, split_ratio):
         Trains model
     """
     X_preprocessed = preprocess()
-    y = y_creator(1997)
+
+    array_teams_preprocessed = get_all_season_team_stats(X_preprocessed)
+
+
+
+
+
+
+
+
+    print("❤️", array_teams_preprocessed_flatten)
+
+
+    df_preprocessed_teams = pd.DataFrame(array_teams_preprocessed_flatten)
+
+    X_teams = df_preprocessed_teams.drop(index=-1, axis=1)
+
+    y = df_preprocessed_teams.iloc[:, -1]
 
     # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
-    test_length = int(len(X_preprocessed) * split_ratio)
-    val_length = int((len(X_preprocessed)-test_length) * split_ratio)
-    train_length = len(X_preprocessed) - val_length - test_length
+    test_length = int(len(X_teams) * split_ratio)
+    val_length = int((len(X_teams)-test_length) * split_ratio)
+    train_length = len(X_teams) - val_length - test_length
 
-    X_train_preprocessed = X_preprocessed.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
-    X_val_preprocessed = X_preprocessed.iloc[train_length: train_length + val_length, :].sample(frac=1)
-    X_test_preprocessed = X_preprocessed.iloc[train_length+val_length:, :].sample(frac=1)
+    X_train_preprocessed = X_teams.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
+    X_val_preprocessed = X_teams.iloc[train_length: train_length + val_length, :].sample(frac=1)
+    X_test_preprocessed = X_teams.iloc[train_length+val_length:, :].sample(frac=1)
 
     y_train = y.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
     y_val = y.iloc[train_length: train_length + val_length, :].sample(frac=1)
