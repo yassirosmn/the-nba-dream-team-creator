@@ -6,7 +6,7 @@ from params import *
 # Import data
 from ml_logic.data import load_data, player_full_data_df, y_creator
 from ml_logic.model import initialize_model, fit_model, score_model
-from ml_logic.from_player_to_team import get_all_season_team_stats
+from ml_logic.from_player_to_team import get_all_seasons_all_teams_starters_stats
 
 # Import preprocessing function
 from ml_logic.preprocessor import preprocess_features
@@ -14,11 +14,12 @@ from xgboost import XGBRegressor
 
 
 def preprocess():
-
+    """
+        Preprocess X
+    """
     # Load preprocessed data for
     dfs = load_data()
     X = player_full_data_df(dfs, 1997)
-    y = y_creator(1997)
 
     # Process data
     X_preprocessed = preprocess_features(X)
@@ -26,42 +27,32 @@ def preprocess():
     return X_preprocessed
 
 def train(model_type, split_ratio):
-
     """
         Trains model
     """
     X_preprocessed = preprocess()
 
-    array_teams_preprocessed = get_all_season_team_stats(X_preprocessed)
-
-
-
-
-
-
-
-
-    print("❤️", array_teams_preprocessed_flatten)
-
-
-    df_preprocessed_teams = pd.DataFrame(array_teams_preprocessed_flatten)
-
-    X_teams = df_preprocessed_teams.drop(index=-1, axis=1)
-
-    y = df_preprocessed_teams.iloc[:, -1]
+    all_season_team_starters_stats_flattened, season_and_team_key = get_all_seasons_all_teams_starters_stats(X_preprocessed)
+    df_preprocessed_teams = pd.concat(
+        [pd.DataFrame(season_and_team_key, columns=["season_team"]),
+         pd.DataFrame(all_season_team_starters_stats_flattened)], axis = 1)
 
     # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
-    test_length = int(len(X_teams) * split_ratio)
-    val_length = int((len(X_teams)-test_length) * split_ratio)
-    train_length = len(X_teams) - val_length - test_length
+    test_length = int(len(df_preprocessed_teams) * split_ratio)
+    val_length = int((len(df_preprocessed_teams)-test_length) * split_ratio)
+    train_length = len(df_preprocessed_teams) - val_length - test_length
 
-    X_train_preprocessed = X_teams.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
-    X_val_preprocessed = X_teams.iloc[train_length: train_length + val_length, :].sample(frac=1)
-    X_test_preprocessed = X_teams.iloc[train_length+val_length:, :].sample(frac=1)
+    df_train_preprocessed = df_preprocessed_teams.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
+    df_val_preprocessed = df_preprocessed_teams.iloc[train_length: train_length + val_length, :].sample(frac=1)
+    df_test_preprocessed = df_preprocessed_teams.iloc[train_length+val_length:, :].sample(frac=1)
 
-    y_train = y.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
-    y_val = y.iloc[train_length: train_length + val_length, :].sample(frac=1)
-    y_test = y.iloc[train_length+val_length:, :].sample(frac=1)
+    X_train_preprocessed = df_train_preprocessed.iloc[:, :-1]
+    X_val_preprocessed = df_val_preprocessed.iloc[:, :-1]
+    X_test_preprocessed = df_test_preprocessed.iloc[:, :-1]
+
+    y_train = pd.DataFrame(df_train_preprocessed.iloc[:, -1])
+    y_val = pd.DataFrame(df_val_preprocessed.iloc[:, -1])
+    y_test = pd.DataFrame(df_test_preprocessed.iloc[:, -1])
 
     model = initialize_model(model_type)
 
