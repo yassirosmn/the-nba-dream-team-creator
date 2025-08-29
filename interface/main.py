@@ -9,7 +9,7 @@ from ml_logic.model import initialize_model, fit_model, score_model,initialize_d
 from ml_logic.from_player_to_team import get_all_seasons_all_teams_starters_stats
 
 # Import preprocessing function
-from ml_logic.preprocessor import preprocess_features
+from ml_logic.preprocessor import preprocess_features_and_save
 
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.neighbors import KNeighborsRegressor
@@ -20,16 +20,16 @@ from xgboost import XGBRegressor
 
 
 
-def load_and_preprocess():
+def load_and_preprocess_and_save():
     """
-        Preprocess X
+        LoadPreprocess X and
     """
     # Load preprocessed data for
     dfs = load_data()
     X = player_full_data_df(dfs, 1997)
 
     # Process data
-    X_preprocessed = preprocess_features(X)
+    X_preprocessed = preprocess_features_and_save(X)
 
     return X_preprocessed
 
@@ -204,7 +204,7 @@ def pred(model, X_new: pd.DataFrame=None):
 
 if __name__ == '__main__':
 
-    X_preprocessed = load_and_preprocess()
+    X_preprocessed = load_and_preprocess_and_save()
     y_winrate, y = new_y_creator(1997)
     model, score = train(LinearRegression(), X_preprocessed, y_winrate, 0.3)
     # XGBRegressor(n_estimators=3, max_depth=5)
