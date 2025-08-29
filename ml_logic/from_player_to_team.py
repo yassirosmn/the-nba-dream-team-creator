@@ -1,240 +1,96 @@
 # For each season and team get the ID of players that are in starting 5
 
 from ml_logic.data import player_full_data_df, load_data
+from ml_logic.preprocessor import preprocess_features
 import pandas as pd
+import numpy as np
 
-# Constants
 
-list_dataframe = load_data()
-players_full_data = player_full_data_df(list_dataframe, 1997)
-
-dict_shaytan = {
-    "2022MIL": 0.30434782608695654,
-    "2022BOS": 0.6086956521739131,
-    "2021BRK": 0.34782608695652173,
-    "2022DAL": 0.34782608695652173,
-    "2019PHI": 0.30434782608695654,
-    "2024NYK": 0.34782608695652173,
-    "2023LAL": 0.21739130434782608,
-    "2018HOU": 0.4782608695652174,
-    "2019MIL": 0.4782608695652174,
-    "2018PHI": 0.30434782608695654,
-    "2019HOU": 0.2608695652173913,
-    "2008CLE": 0.2608695652173913,
-    "2021PHI": 0.391304347826087,
-    "2022MEM": 0.34782608695652173,
-    "2022PHI": 0.2608695652173913,
-    "2022PHO": 0.391304347826087,
-    "2025GSW": 0.13043478260869565,
-    "2018NOP": 0.17391304347826086,
-    "2021MIL": 0.9130434782608695,
-    "2024DAL": 0.4782608695652174,
-    "2022MIA": 0.4782608695652174,
-    "2024OKC": 0.391304347826087,
-    "2019TOR": 0.9565217391304348,
-    "2018CLE": 0.5217391304347826,
-    "2017CLE": 0.6086956521739131,
-    "2018UTA": 0.21739130434782608,
-    "2020HOU": 0.2608695652173913,
-    "2020MIA": 0.4782608695652174,
-    "2011BOS": 0.30434782608695654,
-    "2023PHI": 0.30434782608695654,
-    "2025CLE": 0.391304347826087,
-    "2025NYK": 0.391304347826087,
-    "2015CLE": 0.6086956521739131,
-    "2002DAL": 0.2608695652173913,
-    "2025MIN": 0.2608695652173913,
-    "2013MEM": 0.30434782608695654,
-    "2001DAL": 0.21739130434782608,
-    "2018BOS": 0.43478260869565216,
-    "2014LAC": 0.30434782608695654,
-    "2001TOR": 0.21739130434782608,
-    "2020LAC": 0.34782608695652173,
-    "2020LAL": 1.0,
-    "2023PHO": 0.2608695652173913,
-    "2023MIA": 0.34782608695652173,
-    "2024MIN": 0.391304347826087,
-    "2010BOS": 0.5217391304347826,
-    "2025OKC": 1.0,
-    "2004NJN": 0.34782608695652173,
-    "2008LAL": 0.6521739130434783,
-    "2013NYK": 0.34782608695652173,
-    "2014BRK": 0.17391304347826086,
-    "2011MEM": 0.08695652173913043,
-    "2001PHI": 0.6521739130434783,
-    "1997MIA": 0.43478260869565216,
-    "2024BOS": 1.0,
-    "2008DET": 0.43478260869565216,
-    "2011OKC": 0.34782608695652173,
-    "2006PHO": 0.43478260869565216,
-    "2021UTA": 0.391304347826087,
-    "1997HOU": 0.391304347826087,
-    "2011DAL": 0.9130434782608695,
-    "1998CHH": 0.2608695652173913,
-    "2013MIA": 1.0,
-    "2018TOR": 0.391304347826087,
-    "2006LAC": 0.17391304347826086,
-    "2025BOS": 0.34782608695652173,
-    "2012LAC": 0.21739130434782608,
-    "2023BOS": 0.43478260869565216,
-    "2020TOR": 0.34782608695652173,
-    "2017WAS": 0.2608695652173913,
-    "2015HOU": 0.43478260869565216,
-    "2015LAC": 0.30434782608695654,
-    "2007GSW": 0.08695652173913043,
-    "2005PHO": 0.4782608695652174,
-    "2014OKC": 0.43478260869565216,
-    "2021ATL": 0.30434782608695654,
-    "2019POR": 0.391304347826087,
-    "2010CLE": 0.391304347826087,
-    "2014MIA": 0.6086956521739131,
-    "2024CLE": 0.2608695652173913,
-    "2000PHO": 0.21739130434782608,
-    "1997ATL": 0.2608695652173913,
-    "2014WAS": 0.21739130434782608,
-    "2016ATL": 0.2608695652173913,
-    "2016OKC": 0.391304347826087,
-    "2017GSW": 1.0,
-    "2018GSW": 0.9565217391304348,
-    "2006MIA": 0.9565217391304348,
-    "2006NJN": 0.30434782608695654,
-    "2006CLE": 0.2608695652173913,
-    "2021PHO": 0.6086956521739131,
-    "2006DET": 0.4782608695652174,
-    "2003BOS": 0.17391304347826086,
-    "2004DET": 0.9130434782608695,
-    "2004LAL": 0.6086956521739131,
-    "2004MIA": 0.2608695652173913,
-    "2004MIN": 0.4782608695652174,
-    "2022GSW": 0.9130434782608695,
-    "2005DET": 0.6086956521739131,
-    "2003DAL": 0.391304347826087,
-    "2005MIA": 0.4782608695652174,
-    "2011MIA": 0.6086956521739131,
-    "2019GSW": 0.6521739130434783,
-    "2012BOS": 0.34782608695652173,
-    "1997LAL": 0.2608695652173913,
-    "2012LAL": 0.30434782608695654,
-    "2019BOS": 0.2608695652173913,
-    "2002NJN": 0.6521739130434783,
-    "2012MIA": 0.9565217391304348,
-    "2006DAL": 0.5217391304347826,
-    "2008ORL": 0.30434782608695654,
-    "2012OKC": 0.6086956521739131,
-    "2012PHI": 0.08695652173913043,
-    "2008NOH": 0.34782608695652173,
-    "2002BOS": 0.391304347826087,
-    "1999POR": 0.43478260869565216,
-    "2011LAL": 0.34782608695652173,
-    "2005WAS": 0.21739130434782608,
-    "2003PHI": 0.2608695652173913,
-    "2009LAL": 1.0,
-    "2009DAL": 0.17391304347826086,
-    "2009CLE": 0.4782608695652174,
-    "2009BOS": 0.34782608695652173,
-    "2013GSW": 0.17391304347826086,
-    "2000NYK": 0.391304347826087,
-    "2016GSW": 0.6521739130434783,
-    "2016POR": 0.21739130434782608,
-    "2016TOR": 0.43478260869565216,
-    "2009ORL": 0.5652173913043478,
-    "2015ATL": 0.4782608695652174,
-    "2013OKC": 0.391304347826087,
-    "2001CHH": 0.17391304347826086,
-    "2007DET": 0.4782608695652174,
-    "1997UTA": 0.6521739130434783,
-    "2001MIL": 0.43478260869565216,
-    "2001LAL": 0.9565217391304348,
-    "1997CHI": 1.0,
-    "2000LAL": 1.0,
-    "2003NJN": 0.6086956521739131,
-    "2003DET": 0.4782608695652174,
-    "2002LAL": 0.9130434782608695,
-    "2002DET": 0.34782608695652173,
-    "2007NJN": 0.17391304347826086,
-    "2011CHI": 0.4782608695652174,
-    "2010UTA": 0.21739130434782608,
-    "2010PHO": 0.391304347826087,
-    "2017BOS": 0.4782608695652174,
-    "2017UTA": 0.21739130434782608,
-    "2014POR": 0.21739130434782608,
-    "2008BOS": 1.0,
-    "2008UTA": 0.2608695652173913,
-    "2007UTA": 0.34782608695652173,
-    "2009ATL": 0.2608695652173913,
-    "2002SAC": 0.4782608695652174,
-    "2007PHO": 0.34782608695652173,
-    "1999NYK": 0.34782608695652173,
-    "2003SAC": 0.34782608695652173,
-    "1999ATL": 0.2608695652173913,
-    "2000POR": 0.391304347826087,
-    "2015CHI": 0.30434782608695654,
-    "2010ATL": 0.30434782608695654,
-    "2001SAC": 0.30434782608695654,
-    "1999UTA": 0.30434782608695654,
-    "1998LAL": 0.391304347826087,
-    "1997NYK": 0.30434782608695654,
-    "2010LAL": 1.0,
-    "2010ORL": 0.43478260869565216,
-    "2004SAC": 0.2608695652173913,
-    "2000UTA": 0.34782608695652173
-}
-
-# For season, team get 5 IDs
-
-def get_starters_stats_per_season_per_team(season: int, team: str, number_of_players: int = 5):
-
-    season_team_players_id = []
-
+def get_starters_stats_per_season_per_team(season: int,
+                                           team: str,
+                                           data_preprocessed: pd.DataFrame):
+    """
+    Get all the starters's stats per season per team
+    Returns a DataFrame
+    """
     # take only season and team from full table
-    sub_table = players_full_data.loc[
-        (players_full_data["season"] == season) & (players_full_data["team"] == team)]
-
-    # take players only if starting_5 == 1
-    starters = sub_table.loc[sub_table["starting_5"] == 1]
-
-    return starters
+    players_of_one_team_of_one_season = data_preprocessed.loc[
+        (data_preprocessed["season"] == season) & (data_preprocessed["team"] == team)]
+    # take players only if starting_5 == 1 (the 5 players that played the most)
+    starters_stats_per_season_per_team = players_of_one_team_of_one_season.loc[players_of_one_team_of_one_season["starting_5"] == 1]
+    return starters_stats_per_season_per_team
 
 
 
-def get_team_season_stats(season: int, team: str, stats_filtered: list = ["pts", "ast", "stl", "blk", "trb", "tov"], number_of_players: int = 5):
-
-    team_stats = []
-
-    starters_stats = get_starters_stats_per_season_per_team(season, team, number_of_players)
-
+def get_filtered_starters_stats_per_season_per_team(season: int,
+                                                    team: str,
+                                                    data_preprocessed: pd.DataFrame,
+                                                    stats_filtered: list =['ft', 'orb', 'drb', 'ast', 'stl', 'blk', 'tov', 'pts'],
+                                                                            #['season', 'age', 'g', 'gs', 'mp', 'fg', 'fga', 'x3p', 'x3pa', 'x2p',
+                                                                            # 'x2pa', 'ft', 'fta', 'orb', 'drb', 'ast', 'stl', 'blk', 'tov', 'pf',
+                                                                            # 'pts', 'rate_rank', 'starting_5', 'experience', 'bad_pass_turnover',
+                                                                            # 'lost_ball_turnover', 'shooting_foul_committed',
+                                                                            # 'offensive_foul_committed', 'shooting_foul_drawn',
+                                                                            # 'offensive_foul_drawn', 'avg_dist_fga', 'percent_fga_from_x2p_range',
+                                                                            # 'percent_fga_from_x0_3_range', 'percent_fga_from_x3_10_range',
+                                                                            # 'percent_fga_from_x10_16_range', 'percent_fga_from_x16_3p_range',
+                                                                            # 'percent_fga_from_x3p_range', 'fg_percent_from_x2p_range',
+                                                                            # 'fg_percent_from_x0_3_range', 'fg_percent_from_x3_10_range',
+                                                                            # 'fg_percent_from_x10_16_range', 'fg_percent_from_x16_3p_range',
+                                                                            # 'fg_percent_from_x3p_range', 'percent_dunks_of_fga', 'num_of_dunks',
+                                                                            # 'percent_corner_3s_of_3pa', 'ht_in_in', 'wt'],
+                                                    number_of_players: int = 5) -> list:
+    """
+    Get filtered starters's stats per season per team
+    Returns a list
+    """
+    filtered_starters_stats_per_season_per_team = []
+    starters_stats = get_starters_stats_per_season_per_team(season, team, data_preprocessed)
     filtered_starters_stats = starters_stats[stats_filtered]
-
     for _, player in filtered_starters_stats.iterrows():
-        team_stats.append(player.values)
+        filtered_starters_stats_per_season_per_team.append(player.values)
+    return filtered_starters_stats_per_season_per_team
 
-    return team_stats
 
+def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame) :
+    """
+    Get filtered starters's stats for ALL season for ALL teams
+    Returns 2 lists
+    """
+    all_season_team_starters_stats = []
+    season_and_team_key = []
+    all_season_team_starters_stats_flattened = []
 
-# Get all data per season and per team
+    for season in X_preprocessed["season"].unique():
+        for team in X_preprocessed["team"].unique():
+            # Get the straters's stats for this season and this team :
+            team_season_stats = get_filtered_starters_stats_per_season_per_team(season, team, X_preprocessed)
 
-def get_all_season_team_stats(full_dataset):
-    X = []
-    for season in full_dataset["season"].unique():
-        for team in full_dataset["team"].unique():
-            team_season_stats = get_team_season_stats(season, team)
-            if f'{season} + {team}' in dict_shaytan.keys():
-                team_season_stats.append(dict_shaytan[f'{season} + {team}'])
-            else :
-                team_season_stats.append(0.0)
-            X.append(team_season_stats)
-    return X
+            # If there are stats for this season and team :
+            if team_season_stats != [] :
+
+                # Append it to a list :
+                all_season_team_starters_stats.append(team_season_stats)
+
+                # Create a Key SeasonTeam :
+                key = str(season) + "_" + team
+                season_and_team_key.append(key)
+
+    all_season_team_starters_stats_flattened = \
+        [np.concatenate([x if isinstance(x, np.ndarray) else np.array([x]) \
+        for x in row]) for row in all_season_team_starters_stats
+         ]
+
+    return all_season_team_starters_stats_flattened, season_and_team_key
 
 # Tests
 if __name__ == "__main__":
-    print(get_starters_stats_per_season_per_team(2025, "LAL"))
-    print(type(get_starters_stats_per_season_per_team(2025, "LAL")))
-    print(get_team_season_stats(2025, "LAL"))
-    print(type(get_team_season_stats(2025, "LAL")))
-    print(pd.DataFrame(get_all_season_team_stats(players_full_data)))
-    cpt = 0
-    for elmt in get_all_season_team_stats(players_full_data) :
-        cpt +=1
-    print("✅",cpt)
+
+
+    dfs = load_data()
+    X = player_full_data_df(dfs, 1997)
+    X_preprocessed = preprocess_features(X)
+    temp1, temp2 = get_all_seasons_all_teams_starters_stats(X_preprocessed)
+    print(pd.DataFrame(temp1))
 
     print("Test good (✅ pour Flavian)")

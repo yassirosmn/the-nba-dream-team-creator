@@ -14,25 +14,29 @@ def preprocess_features(X: pd.DataFrame) -> np.ndarray:
     into a preprocessed one of fixed shape (_, XXXX).
     """
     X_dropped = X.drop(columns=COLUMNS_TO_DROP)
-    X_num = X_dropped.select_dtypes(include="number")
+    X_dropped_season_drop = X_dropped.drop(columns=["season"])
+    X_dropped_season_drop_num = X_dropped_season_drop.select_dtypes(include="number")
+
 
     # Imputing NaN values
     imputer = KNNImputer().set_output(transform='pandas')
-    imputer.fit(X_num)
+    imputer.fit(X_dropped_season_drop_num)
     # Call the "transform" method on the object
-    X_num = imputer.transform(X_num)
+    X_dropped_season_drop_imputed = imputer.transform(X_dropped_season_drop_num)
+
 
     # Scaling features
-    # robust_features = X_num.columns #Insérer noms de features...
     robust_scaler = RobustScaler().set_output(transform='pandas')
-    robust_scaler.fit(X_num)
-    X_processed = robust_scaler.transform(X_num)
+    robust_scaler.fit(X_dropped_season_drop_imputed)
+    X_num = robust_scaler.transform(X_dropped_season_drop_imputed)
+
+    # Concatenation
+    X_processed = pd.concat([X_dropped[["season"]], X_dropped.select_dtypes(exclude="number"), X_num], axis=1)
 
 
     print("✅ X_processed, with shape", X_processed.shape)
 
     return X_processed
-
 
 # Tests
 if __name__ == "__main__":
@@ -40,3 +44,4 @@ if __name__ == "__main__":
     dfs = load_data()
     X = player_full_data_df(dfs, 1997)
     X_processed = preprocess_features(X)
+    print(X_processed.isna().sum())
