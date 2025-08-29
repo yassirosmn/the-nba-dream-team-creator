@@ -10,7 +10,14 @@ from ml_logic.from_player_to_team import get_all_seasons_all_teams_starters_stat
 
 # Import preprocessing function
 from ml_logic.preprocessor import preprocess_features
+
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, AdaBoostRegressor, GradientBoostingRegressor, VotingRegressor
 from xgboost import XGBRegressor
+
 
 
 def load_and_preprocess():
@@ -150,10 +157,10 @@ def pred(model, X_new: pd.DataFrame=None):
 if __name__ == '__main__':
 
     X_preprocessed = load_and_preprocess()
-    y = new_y_creator(1997)
-    model, score = train(XGBRegressor(), X_preprocessed, y, 0.3)
+    y_winrate, y = new_y_creator(1997)
+    model, score = train(LinearRegression(), X_preprocessed, y_winrate, 0.3)
+    # XGBRegressor(n_estimators=3, max_depth=5)
     print(score)
-    # print(model.score(X_preprocessed.drop(columns="PM"),y))
 
     # # Test d'une ligne au pif
     # X_new = X_preprocessed.iloc[[5]]
