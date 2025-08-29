@@ -5,7 +5,7 @@ from params import *
 
 # Import data
 from ml_logic.data import load_data, player_full_data_df, new_y_creator
-from ml_logic.model import initialize_model, fit_model, score_model
+from ml_logic.model import initialize_model, fit_model, score_model,initialize_deep_dense_model, compile_deep_model, fit_deep_model, initialize_deep_cnn_model, initialize_deep_rnn_model
 from ml_logic.from_player_to_team import get_all_seasons_all_teams_starters_stats
 
 # Import preprocessing function
@@ -70,6 +70,54 @@ def train(model_type, X_preprocessed, y, split_ratio):
 
     score = model.score(X_test_preprocessed,y_test)
     return model, score
+
+
+
+def train_deep(model_type : ['cnn','rnn','dense'], X_preprocessed, y, split_ratio):
+    """
+        Trains model
+    """
+    all_season_team_starters_stats_flattened, season_and_team_key = get_all_seasons_all_teams_starters_stats(X_preprocessed)
+    df_preprocessed_teams_with_key = pd.concat(
+        [pd.DataFrame(season_and_team_key, columns=["PM"]),
+         pd.DataFrame(all_season_team_starters_stats_flattened)], axis = 1)
+
+    df_preprocessed_teams_with_key_merged_y = df_preprocessed_teams_with_key.merge(y, how="left", on="PM")
+
+    df_preprocessed_teams_with_key_merged_y_drop_key = df_preprocessed_teams_with_key_merged_y.drop(columns="PM")
+
+    # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
+    test_length = int(len(df_preprocessed_teams_with_key_merged_y_drop_key) * split_ratio)
+    val_length = int((len(df_preprocessed_teams_with_key_merged_y_drop_key)-test_length) * split_ratio)
+    train_length = len(df_preprocessed_teams_with_key_merged_y_drop_key) - val_length - test_length
+
+    df_train_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
+    df_val_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[train_length: train_length + val_length, :].sample(frac=1)
+    df_test_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[train_length+val_length:, :].sample(frac=1)
+
+    X_train_preprocessed = df_train_preprocessed.iloc[:, :-1]
+    X_val_preprocessed = df_val_preprocessed.iloc[:, :-1]
+    X_test_preprocessed = df_test_preprocessed.iloc[:, :-1]
+
+    y_train = pd.DataFrame(df_train_preprocessed.iloc[:, -1])
+    y_val = pd.DataFrame(df_val_preprocessed.iloc[:, -1])
+    y_test = pd.DataFrame(df_test_preprocessed.iloc[:, -1])
+
+    print(X_train_preprocessed.shape)
+    if model_type == "dense":
+        model = initialize_deep_dense_model(X_train_preprocessed)
+    elif model_type == "cnn":
+        model = initialize_deep_cnn_model(X_train_preprocessed)
+    else :
+        model = initialize_deep_rnn_model(X_train_preprocessed)
+
+    model = compile_deep_model(model)
+
+    history,model = fit_deep_model(model, X_train_preprocessed, y_train, validation_data=(X_val_preprocessed,y_val))
+    print("✅ train() done \n")
+    eval = model.evaluate(X_test_preprocessed, y_test)
+
+    return model, eval
 
 
 # def evaluate(
@@ -165,3 +213,9 @@ if __name__ == '__main__':
     # # Test d'une ligne au pif
     # X_new = X_preprocessed.iloc[[5]]
     # pred(model, X_new)
+
+## deep test
+    # X_preprocessed = load_and_preprocess()
+    # y_winrate,y = new_y_creator(1997)
+    # model, eval = train_deep("rnn",X_preprocessed, y_winrate, 0.3)
+    # print(eval)
