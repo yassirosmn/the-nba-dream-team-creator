@@ -67,7 +67,7 @@ def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame) :
             team_season_stats = get_filtered_starters_stats_per_season_per_team(season, team, X_preprocessed)
 
             # If there are stats for this season and team :
-            if team_season_stats != [] and team != "2TM" and team != "3TM" and team != "4TM" and team != "5TM" :
+            if team_season_stats != [] :
 
                 # Append it to a list :
                 all_season_team_starters_stats.append(team_season_stats)

@@ -138,7 +138,9 @@ def player_full_data_df(list_dataframe,year):
 
     merged_dfs = Player_Totals_df_year.merge(Player_Season_Info_df_year,how= 'left',on='ID').merge(Player_Play_By_Play_df_year,how= 'left',on='ID').merge(Player_Shooting_df_year,how= 'left',on='ID').merge(Player_Career_Info_Reduced_df,how = 'left',on='player_id')
 
-    return merged_dfs
+    players_full_data = merged_dfs[(merged_dfs['team'] != "2TM") & (merged_dfs['team'] != "3TM") & (merged_dfs['team'] != "4TM")& (merged_dfs['team'] != "5TM")]
+
+    return players_full_data
 
 
 ## Return filtered dataset on starting_5 from 1997
