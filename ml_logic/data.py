@@ -155,19 +155,19 @@ import pandas as pd
 import numpy as np
 from params import *
 
-def new_y_creator(year) -> pd.DataFrame :
+def new_y_creator(year):
 
-    # Chemin d’accès des fichiers de données
+    # Chemin d'accès des fichiers de données
     path = FILE_PATH
 
     #########################
     #### translate_dict #####
     #########################
 
-    # Chargement du fichier des abréviations d’équipes
+    # Chargement du fichier des abréviations d'équipes
     translate = pd.read_csv(f'{path}/Team Abbrev.csv')
 
-    # Suppression des colonnes inutiles et création d’un dictionnaire {'nom complet': 'abréviation'}
+    # Suppression des colonnes inutiles et création d'un dictionnaire {'nom complet': 'abréviation'}
     translate = translate.drop(columns=['season','lg','playoffs']).set_index('team').to_dict()['abbreviation']
 
     #######################
@@ -190,8 +190,8 @@ def new_y_creator(year) -> pd.DataFrame :
     # Transformation du nombre de victoires en pourcentage de victoires
     conf_winrate['w'] = conf_winrate.apply(lambda row : row['w']/(row['w'] + row['l']), axis = 1)
 
-    # Création d’une clé primaire PM = saison + abréviation
-    conf_winrate['PM'] = conf_winrate.apply(lambda row : str(row['season']) + "_"  + str(row['abbreviation']), axis = 1)
+    # Création d'une clé primaire PM = saison + abréviation
+    conf_winrate['PM'] = conf_winrate.apply(lambda row : str(row['season']) + '_' + str(row['abbreviation']), axis = 1)
 
     # Suppression des colonnes inutiles
     conf_winrate.drop(columns=['abbreviation','season','l'], inplace=True)
@@ -219,7 +219,7 @@ def new_y_creator(year) -> pd.DataFrame :
     # Conversion de la colonne année en entier
     final_scores['Yr'] = final_scores['Yr'].apply(lambda x : int(x))
 
-    # Filtrage des saisons supérieures ou égales à l’année passée en paramètre
+    # Filtrage des saisons supérieures ou égales à l'année passée en paramètre
     final_scores = final_scores.query(f'Yr >= {year}')
 
     ## Extraction des caractéristiques utilisables
@@ -227,7 +227,7 @@ def new_y_creator(year) -> pd.DataFrame :
     # Nettoyage de la colonne Team : suppression du rang affiché en suffixe
     final_scores['Team'] = final_scores['Team'].apply(lambda x : x[:len(x)-4])
 
-    # Traduction du nom d’équipe complet en abréviation
+    # Traduction du nom d'équipe complet en abréviation
     final_scores['Team'] = final_scores['Team'].apply(lambda team : translate[team.strip()])
 
     # Attribution de points par tour de playoffs
@@ -246,11 +246,11 @@ def new_y_creator(year) -> pd.DataFrame :
         All_playoff_team_point=("All_playoff_team_point", "max")
     )
 
-    # Réinitialisation de l’index multi-niveaux
+    # Réinitialisation de l'index multi-niveaux
     final_scores = final_scores.reset_index()
 
     # Création de la clé primaire PM = année + abréviation
-    final_scores["PM"] = final_scores["Yr"].astype(str) + "_"  + final_scores["Team"]
+    final_scores["PM"] = final_scores["Yr"].astype(str) + '_' + final_scores["Team"]
 
     # Normalisation des points de playoffs sur une base de 15
     final_scores['All_playoff_team_point'] = final_scores['All_playoff_team_point'].apply(lambda val : val/15)
@@ -275,7 +275,7 @@ def new_y_creator(year) -> pd.DataFrame :
     y_base = y_base[y_base['team']!= '5TM']
 
     # Création de la clé primaire PM = saison + abréviation
-    y_base['PM'] = y_base.apply(lambda row : str(row['season'])+ "_" + row['team'], axis = 1)
+    y_base['PM'] = y_base.apply(lambda row : str(row['season']) + '_' + row['team'], axis = 1)
 
     # Ajout du taux de victoire par équipe
     y_base['winrate'] = y_base['PM'].apply(lambda PM : conf_winrate_dict[PM])
@@ -283,20 +283,18 @@ def new_y_creator(year) -> pd.DataFrame :
     # Ajout du score de playoffs par équipe (0 si absente)
     y_base['Playoff_score'] = y_base['PM'].apply(lambda PM : final_scores_dict[PM] if PM in final_scores_dict.keys() else 0.0)
 
-    # Calcul d’un score global (moyenne entre taux de victoire et score de playoffs)
+    # Calcul d'un score global (moyenne entre taux de victoire et score de playoffs)
     y_base['global_score'] = y_base.apply(lambda row : (row.winrate + row.Playoff_score) / 2, axis = 1)
 
     # Conservation uniquement de la colonne score global
-    y = y_base[['global_score',"PM"]]
-
-    # Passsage d'un dataframe de 15811 à 862 (en cuttant à 1997)
+    y = y_base[['global_score','PM']]
     y.drop_duplicates(inplace=True)
-
-    #reset index
-    y.reset_index(inplace=True, drop=True)
-
+    y.reset_index(drop=True, inplace=True)
+    y_winrate = y_base[['PM','winrate']]
+    y_winrate.drop_duplicates(inplace=True)
+    y_winrate.reset_index(drop=True, inplace=True)
     # Renvoi du DataFrame final y
-    return y
+    return y_winrate, y
 
 # Tests
 if __name__ == "__main__":

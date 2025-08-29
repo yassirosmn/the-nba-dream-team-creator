@@ -6,6 +6,8 @@ from ml_logic import registry, preprocessor
 app = FastAPI()
 #app.state.model = registry.load_model()
 
+
+# 👇 To do: Update with new functions 
 '''
 # Used for taxifare, to check if needed
     # Comment taxifare: Allowing all middleware is optional, but good practice for dev purposes
