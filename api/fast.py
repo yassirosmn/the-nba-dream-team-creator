@@ -4,8 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from ml_logic import registry, preprocessor
 
 app = FastAPI()
-app.state.model = registry.load_model() # what does this line do?
+#app.state.model = registry.load_model()
 
+'''
 # Used for taxifare, to check if needed
     # Comment taxifare: Allowing all middleware is optional, but good practice for dev purposes
 app.add_middleware(
@@ -32,7 +33,7 @@ def predict(player_C, player_SG, player_PF, player_PG, player_SF):
     y_pred = app.state.model.predict(X_new_preprocessed)
 
     return {"Your team probability to win the NBA is:" float(y_pred[0])}
-
+'''
 
 @app.get("/")
 def root():
