@@ -13,3 +13,6 @@ plotly
 xgboost
 pathlib
 dotenv
+fastapi
+uvicorn[standard]
+joblib
