@@ -1,7 +1,7 @@
-# import glob
-# import os
-# import time
-# import pickle
+import pickle
+import pandas as pd
+
+from ml_logic.data import load_data, player_full_data_df
 
 # from colorama import Fore, Style
 # from tensorflow import keras
@@ -11,35 +11,40 @@
 # import mlflow
 # from mlflow.tracking import MlflowClient
 
-# def save_results(params: dict, metrics: dict) -> None:
-#     """
-#     Persist params & metrics locally on the hard drive at
-#     "{LOCAL_REGISTRY_PATH}/params/{current_timestamp}.pickle"
-#     "{LOCAL_REGISTRY_PATH}/metrics/{current_timestamp}.pickle"
-#     - (unit 03 only) if MODEL_TARGET='mlflow', also persist them on MLflow
-#     """
-#     if MODEL_TARGET == "mlflow":
-#         if params is not None:
-#             mlflow.log_params(params)
-#         if metrics is not None:
-#             mlflow.log_metrics(metrics)
-#         print("✅ Results saved on MLflow")
+def save_player_data_to_database() -> None:
+    '''
+        Saves the full database (after merging all DFs) in local
+    '''
+    df = load_data()
+    X = player_full_data_df(df, 1997)
+    X.to_pickle("./database_folder/player_full_database.pkl")
+    print("✅ Database saved to database")
 
-#     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-#     # Save params locally
-#     if params is not None:
-#         params_path = os.path.join(LOCAL_REGISTRY_PATH, "params", timestamp + ".pickle")
-#         with open(params_path, "wb") as file:
-#             pickle.dump(params, file)
+def load_data_from_database() -> pd.DataFrame:
+    '''
+        Saves the full database (after merging all DFs) in local
+    '''
+    df = pd.read_pickle("./database_folder/player_full_database.pkl")
+    print("✅ Database loaded from database")
+    return df
 
-#     # Save metrics locally
-#     if metrics is not None:
-#         metrics_path = os.path.join(LOCAL_REGISTRY_PATH, "metrics", timestamp + ".pickle")
-#         with open(metrics_path, "wb") as file:
-#             pickle.dump(metrics, file)
 
-#     print("✅ Results saved locally")
+def save_preprocessed_data(df: pd.DataFrame) -> None:
+    '''
+        Saves the full database (after merging all DFs) in local
+    '''
+    df.to_pickle("./database_folder/data_preprocessed.pkl")
+    print("✅ Preprocessed data saved to database")
+
+
+def load_preprocessed_data_from_database() -> pd.DataFrame:
+    '''
+        Saves the full database (after merging all DFs) in local
+    '''
+    df = pd.read_pickle("./database_folder/data_preprocessed.pkl")
+    print("✅ Preprocessed data loaded from database")
+    return df
 
 
 # def save_model(model: keras.Model = None) -> None:
@@ -163,7 +168,6 @@
 #         return None
 
 
-
 # def mlflow_transition_model(current_stage: str, new_stage: str) -> None:
 #     """
 #     Transition the latest model from the `current_stage` to the
@@ -213,3 +217,21 @@
 
 #         return results
 #     return wrapper
+
+
+if __name__ == "__main__":
+    from ml_logic.preprocessor import preprocess_features
+    # Save database
+    save_player_data_to_database()
+
+    # Load database from local
+    df = load_data_from_database()
+    print(df.head())
+
+    # Save preprocessed data
+    X_prep = preprocess_features(df)
+    save_preprocessed_data(X_prep)
+
+    # Load preprocessed data
+    X = load_preprocessed_data_from_database()
+    print(X.head())
