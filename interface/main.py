@@ -4,7 +4,7 @@ import pandas as pd
 from params import *
 
 # Import data
-from ml_logic.data import load_data, player_full_data_df, y_creator
+from ml_logic.data import load_data, player_full_data_df, new_y_creator
 from ml_logic.model import initialize_model, fit_model, score_model
 from ml_logic.from_player_to_team import get_all_seasons_all_teams_starters_stats
 
@@ -13,7 +13,7 @@ from ml_logic.preprocessor import preprocess_features
 from xgboost import XGBRegressor
 
 
-def preprocess():
+def load_and_preprocess():
     """
         Preprocess X
     """
@@ -26,26 +26,27 @@ def preprocess():
 
     return X_preprocessed
 
-def train(model_type, split_ratio):
+def train(model_type, X_preprocessed, y, split_ratio):
     """
         Trains model
     """
-    X_preprocessed = preprocess()
-
     all_season_team_starters_stats_flattened, season_and_team_key = get_all_seasons_all_teams_starters_stats(X_preprocessed)
-    df_preprocessed_teams = pd.DataFrame(all_season_team_starters_stats_flattened)
     df_preprocessed_teams_with_key = pd.concat(
-        [pd.DataFrame(season_and_team_key, columns=["season_team"]),
+        [pd.DataFrame(season_and_team_key, columns=["PM"]),
          pd.DataFrame(all_season_team_starters_stats_flattened)], axis = 1)
 
-    # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
-    test_length = int(len(df_preprocessed_teams) * split_ratio)
-    val_length = int((len(df_preprocessed_teams)-test_length) * split_ratio)
-    train_length = len(df_preprocessed_teams) - val_length - test_length
+    df_preprocessed_teams_with_key_merged_y = df_preprocessed_teams_with_key.merge(y, how="left", on="PM")
 
-    df_train_preprocessed = df_preprocessed_teams.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
-    df_val_preprocessed = df_preprocessed_teams.iloc[train_length: train_length + val_length, :].sample(frac=1)
-    df_test_preprocessed = df_preprocessed_teams.iloc[train_length+val_length:, :].sample(frac=1)
+    df_preprocessed_teams_with_key_merged_y_drop_key = df_preprocessed_teams_with_key_merged_y.drop(columns="PM")
+
+    # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
+    test_length = int(len(df_preprocessed_teams_with_key_merged_y_drop_key) * split_ratio)
+    val_length = int((len(df_preprocessed_teams_with_key_merged_y_drop_key)-test_length) * split_ratio)
+    train_length = len(df_preprocessed_teams_with_key_merged_y_drop_key) - val_length - test_length
+
+    df_train_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[:train_length, :].sample(frac=1) # Shuffle datasets to improve training
+    df_val_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[train_length: train_length + val_length, :].sample(frac=1)
+    df_test_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[train_length+val_length:, :].sample(frac=1)
 
     X_train_preprocessed = df_train_preprocessed.iloc[:, :-1]
     X_val_preprocessed = df_val_preprocessed.iloc[:, :-1]
@@ -60,7 +61,8 @@ def train(model_type, split_ratio):
     model = fit_model(model, X_train_preprocessed, y_train)
     print("✅ train() done \n")
 
-    return model
+    score = model.score(X_test_preprocessed,y_test)
+    return model, score
 
 
 # def evaluate(
@@ -147,9 +149,11 @@ def pred(model, X_new: pd.DataFrame=None):
 
 if __name__ == '__main__':
 
-    X_preprocessed = preprocess()
-
-    model = train(XGBRegressor(), 0.3)
+    X_preprocessed = load_and_preprocess()
+    y = new_y_creator(1997)
+    model, score = train(XGBRegressor(), X_preprocessed, y, 0.3)
+    print(score)
+    # print(model.score(X_preprocessed.drop(columns="PM"),y))
 
     # # Test d'une ligne au pif
     # X_new = X_preprocessed.iloc[[5]]

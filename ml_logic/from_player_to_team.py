@@ -8,18 +8,21 @@ import numpy as np
 
 def get_starters_stats_per_season_per_team(season: int,
                                            team: str,
-                                           data_preprocessed: pd.DataFrame):
+                                           data_preprocessed: pd.DataFrame,
+                                           starting_5: bool = False):
     """
     Get all the starters's stats per season per team
     Returns a DataFrame
     """
     # take only season and team from full table
-    players_of_one_team_of_one_season = data_preprocessed.loc[
+    players_stats_of_one_team_of_one_season = data_preprocessed.loc[
         (data_preprocessed["season"] == season) & (data_preprocessed["team"] == team)]
     # take players only if starting_5 == 1 (the 5 players that played the most)
-    starters_stats_per_season_per_team = players_of_one_team_of_one_season.loc[players_of_one_team_of_one_season["starting_5"] == 1]
-    return starters_stats_per_season_per_team
-
+    starters_stats_of_one_season_of_one_team = players_stats_of_one_team_of_one_season.loc[players_stats_of_one_team_of_one_season["starting_5"] == 1]
+    if starting_5 :
+        return starters_stats_of_one_season_of_one_team
+    else :
+        return players_stats_of_one_team_of_one_season
 
 
 def get_filtered_starters_stats_per_season_per_team(season: int,
@@ -45,7 +48,7 @@ def get_filtered_starters_stats_per_season_per_team(season: int,
     Returns a list
     """
     filtered_starters_stats_per_season_per_team = []
-    starters_stats = get_starters_stats_per_season_per_team(season, team, data_preprocessed)
+    starters_stats = get_starters_stats_per_season_per_team(season, team, data_preprocessed, True)
     filtered_starters_stats = starters_stats[stats_filtered]
     for _, player in filtered_starters_stats.iterrows():
         filtered_starters_stats_per_season_per_team.append(player.values)
