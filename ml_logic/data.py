@@ -2,6 +2,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from params import *
+import warnings
+warnings.simplefilter(action="ignore", category=pd.errors.SettingWithCopyWarning)
 
 
 ##################  CONSTANTS  #####################
@@ -153,7 +155,7 @@ import pandas as pd
 import numpy as np
 from params import *
 
-def new_y_creator(year):
+def new_y_creator(year) -> pd.DataFrame :
 
     # Chemin d’accès des fichiers de données
     path = FILE_PATH
@@ -189,7 +191,7 @@ def new_y_creator(year):
     conf_winrate['w'] = conf_winrate.apply(lambda row : row['w']/(row['w'] + row['l']), axis = 1)
 
     # Création d’une clé primaire PM = saison + abréviation
-    conf_winrate['PM'] = conf_winrate.apply(lambda row : str(row['season']) + str(row['abbreviation']), axis = 1)
+    conf_winrate['PM'] = conf_winrate.apply(lambda row : str(row['season']) + "_"  + str(row['abbreviation']), axis = 1)
 
     # Suppression des colonnes inutiles
     conf_winrate.drop(columns=['abbreviation','season','l'], inplace=True)
@@ -248,7 +250,7 @@ def new_y_creator(year):
     final_scores = final_scores.reset_index()
 
     # Création de la clé primaire PM = année + abréviation
-    final_scores["PM"] = final_scores["Yr"].astype(str) + final_scores["Team"]
+    final_scores["PM"] = final_scores["Yr"].astype(str) + "_"  + final_scores["Team"]
 
     # Normalisation des points de playoffs sur une base de 15
     final_scores['All_playoff_team_point'] = final_scores['All_playoff_team_point'].apply(lambda val : val/15)
@@ -273,7 +275,7 @@ def new_y_creator(year):
     y_base = y_base[y_base['team']!= '5TM']
 
     # Création de la clé primaire PM = saison + abréviation
-    y_base['PM'] = y_base.apply(lambda row : str(row['season']) + row['team'], axis = 1)
+    y_base['PM'] = y_base.apply(lambda row : str(row['season'])+ "_" + row['team'], axis = 1)
 
     # Ajout du taux de victoire par équipe
     y_base['winrate'] = y_base['PM'].apply(lambda PM : conf_winrate_dict[PM])
@@ -285,7 +287,13 @@ def new_y_creator(year):
     y_base['global_score'] = y_base.apply(lambda row : (row.winrate + row.Playoff_score) / 2, axis = 1)
 
     # Conservation uniquement de la colonne score global
-    y = y_base[['global_score']]
+    y = y_base[['global_score',"PM"]]
+
+    # Passsage d'un dataframe de 15811 à 862 (en cuttant à 1997)
+    y.drop_duplicates(inplace=True)
+
+    #reset index
+    y.reset_index(inplace=True, drop=True)
 
     # Renvoi du DataFrame final y
     return y
