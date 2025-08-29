@@ -33,7 +33,8 @@ def train(model_type, split_ratio):
     X_preprocessed = preprocess()
 
     all_season_team_starters_stats_flattened, season_and_team_key = get_all_seasons_all_teams_starters_stats(X_preprocessed)
-    df_preprocessed_teams = pd.concat(
+    df_preprocessed_teams = pd.DataFrame(all_season_team_starters_stats_flattened)
+    df_preprocessed_teams_with_key = pd.concat(
         [pd.DataFrame(season_and_team_key, columns=["season_team"]),
          pd.DataFrame(all_season_team_starters_stats_flattened)], axis = 1)
 
@@ -145,11 +146,11 @@ def pred(model, X_new: pd.DataFrame=None):
 
 
 if __name__ == '__main__':
+
+    X_preprocessed = preprocess()
+
     model = train(XGBRegressor(), 0.3)
-    dfs = load_data()
-    X = player_full_data_df(dfs, 1997)
 
-    #Test d'une ligne au pif
-    X_new = X.iloc[[5]]
-
-    pred(model, X_new)
+    # # Test d'une ligne au pif
+    # X_new = X_preprocessed.iloc[[5]]
+    # pred(model, X_new)
