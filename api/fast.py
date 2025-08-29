@@ -6,7 +6,11 @@ from ml_logic import registry, preprocessor
 app = FastAPI()
 #app.state.model = registry.load_model()
 
+################################ WIP ################################
 '''
+https://www.notion.so/marcus-pernegger/Cr-ation-de-l-API-25d0f87e23cf8086a730e211a263c071?source=copy_link
+
+
 # Used for taxifare, to check if needed
     # Comment taxifare: Allowing all middleware is optional, but good practice for dev purposes
 app.add_middleware(
