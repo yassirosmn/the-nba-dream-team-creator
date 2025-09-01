@@ -14,6 +14,6 @@ xgboost
 pathlib
 dotenv
 fastapi
-uvicorn[standard]
+uvicorn
 joblib
 pickle
