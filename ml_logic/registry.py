@@ -7,6 +7,7 @@ from ml_logic.data import load_data, player_full_data_df
 def load_csvs_and_save_data_to_database() -> None:
     '''
         Saves the full database (after merging all DFs) in local
+        Creates filtered DFs by position in 2025, and stores them to database
     '''
     print("⏳ Saving to Database... ⏳")
     df = load_data()
@@ -34,7 +35,7 @@ def load_csvs_and_save_data_to_database() -> None:
 
 def load_dfs_from_database() -> pd.DataFrame:
     '''
-        Saves the full database (after merging all DFs) in local
+        Loads filtered DFs by position for 2025 from the database
     '''
     print("⏳ Loading Database.. ⏳")
 
@@ -55,7 +56,7 @@ def load_dfs_from_database() -> pd.DataFrame:
 
 def load_data_from_database() -> pd.DataFrame:
     '''
-        Saves the full database (after merging all DFs) in local
+        Loads the full database
     '''
     print("⏳ Loading Database.. ⏳")
 
@@ -71,7 +72,7 @@ def load_data_from_database() -> pd.DataFrame:
 
 def save_preprocessed_data(df: pd.DataFrame) -> None:
     '''
-        Saves the full database (after merging all DFs) in local
+        Saves the preprocessed to the database
     '''
     print("⏳ Saving preprocessed data.. ⏳")
     df.to_pickle("./database_folder/data_preprocessed.pkl")
@@ -79,7 +80,7 @@ def save_preprocessed_data(df: pd.DataFrame) -> None:
 
 def load_preprocessed_data_from_database() -> pd.DataFrame:
     '''
-        Saves the full database (after merging all DFs) in local
+        Loads the preprocessed data from the database
     '''
     print("⏳ Loading preprocessed data.. ⏳")
     try:
