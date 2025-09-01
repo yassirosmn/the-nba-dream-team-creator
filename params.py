@@ -47,3 +47,18 @@ COLUMNS_TO_DROP = ["lg",
 "num_heaves_attempted",
 "num_heaves_made"
 ]
+
+STATS_TO_KEEP = ['ft', 'orb', 'drb', 'ast', 'stl', 'blk', 'tov', 'pts']
+                #['season', 'age', 'g', 'gs', 'mp', 'fg', 'fga', 'x3p', 'x3pa', 'x2p',
+                # 'x2pa', 'ft', 'fta', 'orb', 'drb', 'ast', 'stl', 'blk', 'tov', 'pf',
+                # 'pts', 'rate_rank', 'starting_5', 'experience', 'bad_pass_turnover',
+                # 'lost_ball_turnover', 'shooting_foul_committed',
+                # 'offensive_foul_committed', 'shooting_foul_drawn',
+                # 'offensive_foul_drawn', 'avg_dist_fga', 'percent_fga_from_x2p_range',
+                # 'percent_fga_from_x0_3_range', 'percent_fga_from_x3_10_range',
+                # 'percent_fga_from_x10_16_range', 'percent_fga_from_x16_3p_range',
+                # 'percent_fga_from_x3p_range', 'fg_percent_from_x2p_range',
+                # 'fg_percent_from_x0_3_range', 'fg_percent_from_x3_10_range',
+                # 'fg_percent_from_x10_16_range', 'fg_percent_from_x16_3p_range',
+                # 'fg_percent_from_x3p_range', 'percent_dunks_of_fga', 'num_of_dunks',
+                # 'percent_corner_3s_of_3pa', 'ht_in_in', 'wt'],
