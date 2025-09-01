@@ -3,6 +3,7 @@
 from ml_logic.data import player_full_data_df, load_data
 from ml_logic.preprocessor import preprocess_features
 from ml_logic.registry import load_preprocessed_data_from_database
+from ml_logic.embedder import player_embedder, player_embedder_transform
 import pandas as pd
 import numpy as np
 
@@ -101,7 +102,7 @@ def get_filtered_starters_stats_per_season_per_team(season: int,
     return filtered_starters_stats_per_season_per_team
 
 
-def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame) :
+def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame, ML = True) :
     """
     Get filtered starters's stats for ALL season for ALL teams
     Returns 2 lists
@@ -124,16 +125,19 @@ def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame) :
                 # Create a Key SeasonTeam :
                 key = str(season) + "_" + team
                 season_and_team_key.append(key)
-
+    if ML == False :
+        all_season_team_starters_stats_embedded = player_embedder_transform(all_season_team_starters_stats)
+    
     all_season_team_starters_stats_flattened = \
         [np.concatenate([x if isinstance(x, np.ndarray) else np.array([x]) \
-        for x in row]) for row in all_season_team_starters_stats
+        for x in row]) for row in all_season_team_starters_stats_embedded
          ]
 
     return all_season_team_starters_stats_flattened, season_and_team_key
 
 # Tests
 if __name__ == "__main__":
+    from interface.main import load_and_preprocess_and_save
     X = load_preprocessed_data_from_database()
     # Stat1 = get_player_stats_per_team_per_season("Bam Adebayo", "MIA", X, 2025)
     # print(Stat1)
@@ -147,7 +151,6 @@ if __name__ == "__main__":
     }
     Stat_team = get_new_team_stats_per_season(dico, X, 2025)
     print(Stat_team)
-
     # X_preprocessed = preprocess_features_and_save(X)
     # temp1, temp2 = get_all_seasons_all_teams_starters_stats(X_preprocessed)
     # print(pd.DataFrame(temp1))
