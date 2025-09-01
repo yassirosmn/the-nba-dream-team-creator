@@ -42,7 +42,7 @@ def get_X_y(X_preprocessed, y)-> pd.DataFrame:
     '''
         Returns a DataFrame which contains X and y
     '''
-    get_all_seasons_all_teams_starters_stats
+
     all_season_team_starters_stats_flattened, season_and_team_key = get_all_seasons_all_teams_starters_stats(X_preprocessed)
     df_preprocessed_teams_with_key = pd.concat(
         [pd.DataFrame(season_and_team_key, columns=["PM"]),
