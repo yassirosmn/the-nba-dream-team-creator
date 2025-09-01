@@ -89,9 +89,9 @@ def train(model_type, df_preprocessed_teams_with_key_merged_y_drop_key, split_ra
     return model
 
 
-def train_deep(model_type : ['cnn','rnn','dense'], X_preprocessed, y, split_ratio):
+def train_deep(model_type , X_preprocessed, y, split_ratio):
     """
-        Trains model
+        Trains model, model type should be ['dense','rnn','cnn']
     """
     all_season_team_starters_stats_flattened, season_and_team_key = get_all_seasons_all_teams_starters_stats(X_preprocessed)
     df_preprocessed_teams_with_key = pd.concat(
@@ -212,18 +212,18 @@ def pred(model, X_new_preprocessed: pd.DataFrame=None):
 
 if __name__ == '__main__':
 
-    X_preprocessed = load_and_preprocess_and_save()
-    y_winrate, y = new_y_creator(1997)
-    model, score = train(LinearRegression(), X_preprocessed, y_winrate, 0.3)
-    # XGBRegressor(n_estimators=3, max_depth=5)
-    print(score)
+    # X_preprocessed = load_and_preprocess_and_save()
+    # y_winrate, y = new_y_creator(1997)
+    # model, score = train(LinearRegression(), X_preprocessed, y_winrate, 0.3)
+    # # XGBRegressor(n_estimators=3, max_depth=5)
+    # print(score)
 
     # # Test d'une ligne au pif
     # X_new = X_preprocessed.iloc[[5]]
     # pred(model, X_new)
 
-## deep test
-    # X_preprocessed = load_and_preprocess()
-    # y_winrate,y = new_y_creator(1997)
-    # model, eval = train_deep("rnn",X_preprocessed, y_winrate, 0.3)
-    # print(eval)
+# deep test
+    X_preprocessed = load_and_preprocess_and_save()
+    y_winrate,y = new_y_creator(1997)
+    model, eval = train_deep("dense",X_preprocessed, y, 0.3)
+    print(eval)
