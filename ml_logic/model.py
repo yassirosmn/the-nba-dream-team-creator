@@ -37,7 +37,7 @@ def initialize_deep_dense_model(X_train):
     #reg_l1 = regularizers.L1(0.01)
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     model = Sequential()
-    model.add(Input(shape = (X_train.shape[1],1) ))
+    model.add(Input(shape = (X_train.shape[1],X_train.shape[2],1) ))
 
     ### First layer
     model.add(layers.Dense(300, activation='relu'))
@@ -59,7 +59,7 @@ def initialize_deep_rnn_model(X_train):
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     ## RNN
     rnn = Sequential()
-    rnn.add(Input(shape=(X_train.shape[1],1))),
+    rnn.add(Input(shape=(X_train.shape[1],X_train.shape[2],1))),
     rnn.add(layers.LSTM(50)),
 
     rnn.add(layers.Dense(1, activation="relu"))
@@ -70,7 +70,7 @@ def initialize_deep_cnn_model(X_train):
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     # Conv1D
     cnn = Sequential()
-    cnn.add(Input(shape=(X_train.shape[1],1))), #X_train.shape[1:]
+    cnn.add(Input(shape=(X_train.shape[1],X_train.shape[2],1))), #X_train.shape[1:]
     cnn.add(layers.Conv1D(20, kernel_size=(1))),
     cnn.add(layers.Dense(1, activation="relu"))
     return cnn
