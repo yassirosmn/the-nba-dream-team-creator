@@ -14,11 +14,51 @@ def load_csvs_and_save_data_to_database() -> None:
     X.to_pickle("./database_folder/player_full_database.pkl")
     print("✅ Saved to database !")
 
+    X_2025_C = X.query("season == 2025 & pos == 'C'")
+    X_2025_C.to_pickle("./database_folder/X_2025_C.pkl")
+
+    X_2025_SG = X.query("season == 2025 & pos == 'SG'")
+    X_2025_SG.to_pickle("./database_folder/X_2025_SG.pkl")
+
+    X_2025_PF = X.query("season == 2025 & pos == 'PF'")
+    X_2025_PF.to_pickle("./database_folder/X_2025_PF.pkl")
+
+    X_2025_PG = X.query("season == 2025 & pos == 'PG'")
+    X_2025_PG.to_pickle("./database_folder/X_2025_PG.pkl")
+
+    X_2025_SF = X.query("season == 2025 & pos == 'SF'")
+    X_2025_SF.to_pickle("./database_folder/X_2025_SF.pkl")
+
+    print("✅ Pickles for positions saved")
+
+
+def load_dfs_from_database() -> pd.DataFrame:
+    '''
+        Saves the full database (after merging all DFs) in local
+    '''
+    print("⏳ Loading Database.. ⏳")
+
+    try:
+        df_2025_C = pd.read_pickle("./database_folder/X_2025_C.pkl")
+        df_2025_SG = pd.read_pickle("./database_folder/X_2025_SG.pkl")
+        df_2025_PF = pd.read_pickle("./database_folder/X_2025_PF.pkl")
+        df_2025_PG = pd.read_pickle("./database_folder/X_2025_PG.pkl")
+        df_2025_SF = pd.read_pickle("./database_folder/X_2025_SF.pkl")
+
+        print("✅ Database loaded !")
+
+    except:
+            print(f"\n❌❌ No database found at path : ./database_folder/")
+            pass
+
+    return df_2025_C, df_2025_SG, df_2025_PF, df_2025_PG, df_2025_SF
+
 def load_data_from_database() -> pd.DataFrame:
     '''
         Saves the full database (after merging all DFs) in local
     '''
     print("⏳ Loading Database.. ⏳")
+
     try:
         df = pd.read_pickle("./database_folder/player_full_database.pkl")
         print("✅ Database loaded !")
@@ -232,9 +272,14 @@ if __name__ == "__main__":
 
     # Load database from local
     df = load_data_from_database()
+
     print(df.head())
 
-    # Preprocess data
+    dfs,_,_,_,_ = load_dfs_from_database()
+
+    print(dfs[["pos"]])
+
+    '''# Preprocess data
     X_prep = preprocess_features(df)
 
     # Save preprocessed data
@@ -242,4 +287,4 @@ if __name__ == "__main__":
 
     # Load preprocessed data
     X = load_preprocessed_data_from_database()
-    print(f"\n ➡️ ➡️  Displaying first rows :\n{X.head()}")
+    print(f"\n ➡️ ➡️  Displaying first rows :\n{X.head()}")'''
