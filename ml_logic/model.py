@@ -3,7 +3,7 @@ import numpy as np
 from typing import Tuple
 
 from tensorflow import keras
-from keras import Model, Sequential, layers, regularizers, optimizers
+from keras import Model, Sequential, Input, layers, regularizers, optimizers
 from keras.callbacks import EarlyStopping
 
 
@@ -101,24 +101,24 @@ def initialize_deep_rnn_model(X_train):
     #reg_l1 = regularizers.L1(0.01)
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     ## RNN
-    rnn = Sequential([
-        Input(shape=(423, 1)),
-        layers.LSTM(50),
-        layers.LSTM(100),
-        layers.LSTM(20),
-        layers.Dense(1, activation="relu")
-    ])
+    rnn = Sequential(
+        model.add(Input(shape=(423, 1))),
+        model.add(layers.LSTM(50)),
+        model.add(layers.LSTM(100)),
+        model.add(layers.LSTM(20)),
+        model.add(layers.Dense(1, activation="relu"))
+    )
     return rnn
 
 def initialize_deep_cnn_model(X_train):
     #reg_l1 = regularizers.L1(0.01)
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     # Conv1D
-    cnn = Sequential([
-        Input(shape=X_train.shape[1:]),
-        layers.Conv1D(20, kernel_size=1),
-        layers.Dense(1, activation="relu"),
-    ])
+    cnn = Sequential(
+        model.add(Input(shape=X_train.shape[1:])),
+        model.add(layers.Conv1D(20, kernel_size=1)),
+        model.add(layers.Dense(1, activation="relu"))
+        )
     return cnn
 
 def compile_deep_model(model):

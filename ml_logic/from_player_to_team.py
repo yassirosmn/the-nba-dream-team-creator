@@ -1,7 +1,7 @@
 # For each season and team get the ID of players that are in starting 5
 
 from ml_logic.data import player_full_data_df, load_data
-from ml_logic.preprocessor import preprocess_features_and_save
+from ml_logic.preprocessor import preprocess_features
 from ml_logic.registry import load_data_from_database
 import pandas as pd
 import numpy as np
@@ -22,9 +22,9 @@ def get_player_stats_per_team_per_season(player: str,
     return stats_of_player_of_one_team_of_one_season
 
 
-def get_team_stats_per_team_per_season
+# def get_team_stats_per_team_per_season
 
-df3 = pd.concat([df1, df2], axis=0)
+# df3 = pd.concat([df1, df2], axis=0)
 
 
 
