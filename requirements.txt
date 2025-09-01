@@ -16,3 +16,4 @@ dotenv
 fastapi
 uvicorn[standard]
 joblib
+pickle

@@ -6,7 +6,6 @@ from ml_logic import registry, preprocessor
 app = FastAPI()
 #app.state.model = registry.load_model()
 
-################################ WIP ################################
 '''
 https://www.notion.so/marcus-pernegger/Cr-ation-de-l-API-25d0f87e23cf8086a730e211a263c071?source=copy_link
 

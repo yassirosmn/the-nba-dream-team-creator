@@ -1,9 +1,54 @@
 # For each season and team get the ID of players that are in starting 5
 
 from ml_logic.data import player_full_data_df, load_data
-from ml_logic.preprocessor import preprocess_features
+from ml_logic.preprocessor import preprocess_features_and_save
+from ml_logic.registry import load_data_from_database
 import pandas as pd
 import numpy as np
+
+
+
+###### TO UPDATE (FLAVIAN)
+def get_player_stats_per_team_per_season(player: str,
+                                           team: str,
+                                           full_data_base: pd.DataFrame,
+                                           season: int = 2025)-> pd.DataFrame:
+    """
+    Get all the player's stats per season per team of last season (2025)
+    """
+    # take 1 player for 1 season from 1 team from full table
+    stats_of_player_of_one_team_of_one_season = full_data_base.loc[
+        (full_data_base["season"] == season) & (full_data_base["team"] == team) & (full_data_base["player"] == player)]
+    return stats_of_player_of_one_team_of_one_season
+
+
+def get_team_stats_per_team_per_season
+
+df3 = pd.concat([df1, df2], axis=0)
+
+
+
+
+
+
+# def get_n_player_stats_per_team_per_season(dico_player_and_team: dict,
+#                                            data_preprocessed: pd.DataFrame,
+#                                            season: int = 2025):
+#     """
+#     Get some player's stats per season per team of last season (2025)
+#     """
+#     the_n_players = []
+#     for key,item in enumerate(dico_player_and_team) :
+#         the_n_players = pd.concat([the_n_players, get_player_stats_per_team_per_season(key, item, data_preprocessed)], axis =0)
+#     return the_n_players
+
+#########################
+
+
+
+
+
+
 
 
 def get_starters_stats_per_season_per_team(season: int,
@@ -88,12 +133,11 @@ def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame) :
 
 # Tests
 if __name__ == "__main__":
+    X = load_data_from_database()
+    Stat1 = get_player_stats_per_team_per_season("Bam Adebayo", "MIA", X, 2025)
+    print(Stat1)
+    # X_preprocessed = preprocess_features_and_save(X)
+    # temp1, temp2 = get_all_seasons_all_teams_starters_stats(X_preprocessed)
+    # print(pd.DataFrame(temp1))
 
-
-    dfs = load_data()
-    X = player_full_data_df(dfs, 1997)
-    X_preprocessed = preprocess_features(X)
-    temp1, temp2 = get_all_seasons_all_teams_starters_stats(X_preprocessed)
-    print(pd.DataFrame(temp1))
-
-    print("Test good (✅ pour Flavian)")
+    # print("Test good (✅ pour Flavian)")
