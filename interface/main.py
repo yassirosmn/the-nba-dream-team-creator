@@ -7,7 +7,7 @@ from params import *
 from ml_logic.data import load_data, player_full_data_df, new_y_creator
 from ml_logic.model import initialize_model, fit_model, score_model,initialize_deep_dense_model, compile_deep_model, fit_deep_model, initialize_deep_cnn_model, initialize_deep_rnn_model
 from ml_logic.from_player_to_team import get_all_seasons_all_teams_starters_stats
-from ml_logic.registry import load_csvs_and_save_data_to_database, save_preprocessed_data, load_data_from_database
+from ml_logic.registry import load_csvs_and_save_data_to_database, save_preprocessed_data, load_data_from_database, load_preprocessed_data_from_database
 
 # Import preprocessing function
 from ml_logic.preprocessor import preprocess_features
@@ -40,7 +40,7 @@ def load_and_preprocess_and_save():
 
 def get_X_y(X_preprocessed, y)-> pd.DataFrame:
     '''
-        Returns a DataFrame which contains X and y
+        Returns a DataFrame which contains X and y (= X_preprocessed flattened)
     '''
 
     all_season_team_starters_stats_flattened, season_and_team_key = get_all_seasons_all_teams_starters_stats(X_preprocessed)
@@ -52,15 +52,16 @@ def get_X_y(X_preprocessed, y)-> pd.DataFrame:
 
     df_preprocessed_teams_with_key_merged_y_drop_key = df_preprocessed_teams_with_key_merged_y.drop(columns="PM")
 
+    print("\n✅ got X (X_preprocessed flattened) and y \n")
+
     return df_preprocessed_teams_with_key_merged_y_drop_key
 
 
-def train(model_type, df_preprocessed_teams_with_key_merged_y_drop_key, split_ratio):
+def train_ML(model_type, df_preprocessed_teams_with_key_merged_y_drop_key, split_ratio):
     """
         Trains model
+        returns the model trained and the X_test_preproc and y_test as DFs
     """
-
-
     # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
     test_length = int(len(df_preprocessed_teams_with_key_merged_y_drop_key) * split_ratio)
     val_length = int((len(df_preprocessed_teams_with_key_merged_y_drop_key)-test_length) * split_ratio)
@@ -80,28 +81,21 @@ def train(model_type, df_preprocessed_teams_with_key_merged_y_drop_key, split_ra
     y_val = pd.DataFrame(df_val_preprocessed.iloc[:, -1])
     y_test = pd.DataFrame(df_test_preprocessed.iloc[:, -1])
 
+    # Initialize ML model
     model = initialize_model(model_type)
 
     # Train model
     model = fit_model(model, X_train_preprocessed, y_train)
-    print("✅ train() done \n")
+    print("\n✅ train_ML() done \n")
 
-    return model
+    return model, X_test_preprocessed, y_test
 
 
-def train_deep(model_type , X_preprocessed, y, split_ratio):
+def train_DL(model_type , df_preprocessed_teams_with_key_merged_y_drop_key, split_ratio):
     """
         Trains model, model type should be ['dense','rnn','cnn']
+        returns the model trained and the X_test_preproc and y_test as DFs
     """
-    all_season_team_starters_stats_flattened, season_and_team_key = get_all_seasons_all_teams_starters_stats(X_preprocessed)
-    df_preprocessed_teams_with_key = pd.concat(
-        [pd.DataFrame(season_and_team_key, columns=["PM"]),
-         pd.DataFrame(all_season_team_starters_stats_flattened)], axis = 1)
-
-    df_preprocessed_teams_with_key_merged_y = df_preprocessed_teams_with_key.merge(y, how="left", on="PM")
-
-    df_preprocessed_teams_with_key_merged_y_drop_key = df_preprocessed_teams_with_key_merged_y.drop(columns="PM")
-
     # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
     test_length = int(len(df_preprocessed_teams_with_key_merged_y_drop_key) * split_ratio)
     val_length = int((len(df_preprocessed_teams_with_key_merged_y_drop_key)-test_length) * split_ratio)
@@ -111,15 +105,19 @@ def train_deep(model_type , X_preprocessed, y, split_ratio):
     df_val_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[train_length: train_length + val_length, :].sample(frac=1)
     df_test_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[train_length+val_length:, :].sample(frac=1)
 
+    # Create X's
     X_train_preprocessed = df_train_preprocessed.iloc[:, :-1]
     X_val_preprocessed = df_val_preprocessed.iloc[:, :-1]
     X_test_preprocessed = df_test_preprocessed.iloc[:, :-1]
 
+    # Create y's
     y_train = pd.DataFrame(df_train_preprocessed.iloc[:, -1])
     y_val = pd.DataFrame(df_val_preprocessed.iloc[:, -1])
     y_test = pd.DataFrame(df_test_preprocessed.iloc[:, -1])
 
-    print(X_train_preprocessed.shape)
+    print("Shape of X_train_preprocessed :", X_train_preprocessed.shape)
+
+    # Initialize deep model :
     if model_type == "dense":
         model = initialize_deep_dense_model(X_train_preprocessed)
     elif model_type == "cnn":
@@ -127,84 +125,52 @@ def train_deep(model_type , X_preprocessed, y, split_ratio):
     else :
         model = initialize_deep_rnn_model(X_train_preprocessed)
 
+    # Compile DL model
     model = compile_deep_model(model)
 
+    # Train DL model
     history,model = fit_deep_model(model, X_train_preprocessed, y_train, validation_data=(X_val_preprocessed,y_val))
-    print("✅ train() done \n")
-    eval = model.evaluate(X_test_preprocessed, y_test)
+    print("\n✅ train_DL() done \n")
 
-    return model, eval
+    return model, X_test_preprocessed, y_test
 
 
-def evaluate(model, X_test, y_test) -> pd.DataFrame:
+def evaluate_ML_model(model, X_test, y_test) -> pd.DataFrame:
     """
     Evaluate the performance of the latest production model on processed data
     Return metrics as a DataFrame
     """
-    # print(Fore.MAGENTA + "\n⭐️ Use case: evaluate" + Style.RESET_ALL)
 
-    # model = load_model(stage=stage)
-    # assert model is not None
+    df_score = model.score(X_test, y_test)
 
-    # min_date = parse(min_date).strftime('%Y-%m-%d') # e.g '2009-01-01'
-    # max_date = parse(max_date).strftime('%Y-%m-%d') # e.g '2009-01-01'
-
-    # # Query your BigQuery processed table and get data_processed using `get_data_with_cache`
-    # query = f"""
-    #     SELECT * EXCEPT(_0)
-    #     FROM `{GCP_PROJECT}`.{BQ_DATASET}.processed_{DATA_SIZE}
-    #     WHERE _0 BETWEEN '{min_date}' AND '{max_date}'
-    # """
-
-    # data_processed_cache_path = Path(f"{LOCAL_DATA_PATH}/processed/processed_{min_date}_{max_date}_{DATA_SIZE}.csv")
-    # data_processed = get_data_with_cache(
-    #     gcp_project=GCP_PROJECT,
-    #     query=query,
-    #     cache_path=data_processed_cache_path,
-    #     data_has_header=False
-    # )
-
-    # if data_processed.shape[0] == 0:
-    #     print("❌ No data to evaluate on")
-    #     return None
-
-    # data_processed = data_processed.to_numpy()
-
-    # X_new = data_processed[:, :-1]
-    # y_new = data_processed[:, -1]
-
-    # metrics_dict = evaluate_model(model=model, X=X_new, y=y_new)
-    # mae = metrics_dict["mae"]
-
-    # params = dict(
-    #     context="evaluate", # Package behavior
-    #     training_set_size=DATA_SIZE,
-    #     row_count=len(X_new)
-    # )
-
-    # save_results(params=params, metrics=metrics_dict)
-
-
-    df_score = model.score(X_test,y_test)
-
-    print("✅ evaluate() done \n")
+    print("\n✅ evaluate() done")
+    print("\n💯 Score: ", df_score, "\n")
 
     return df_score
 
+def evaluate_DL_model(model, X_test, y_test) -> pd.DataFrame:
+    """
+    Evaluate the performance of the latest production model on processed data
+    Return metrics as a DataFrame
+    """
+
+    df_score = model.evaluate(X_test, y_test)
+
+    print("✅ evaluate() done \n")
+    print("\n💯 Score: ", df_score, "\n")
+
+    return df_score
 
 def pred(model, X_new_preprocessed: pd.DataFrame=None):
     """
     Make a prediction using the latest trained model
     """
-
-    # Display
-    print("⭐️ Use case: predict\n")
-
     # Predict
     y_pred = model.predict(X_new_preprocessed)
 
     # Print result
-    print("\n✅ Prediction: ", y_pred, "\n", "shape is: ", y_pred.shape, "\n")
+    print("✅ pred() done \n")
+    print("🔮 Prediction: ", y_pred, "of shape : ", y_pred.shape, "\n")
 
     return y_pred
 
@@ -212,18 +178,21 @@ def pred(model, X_new_preprocessed: pd.DataFrame=None):
 
 if __name__ == '__main__':
 
+# ML tests
     # X_preprocessed = load_and_preprocess_and_save()
     # y_winrate, y = new_y_creator(1997)
-    # model, score = train(LinearRegression(), X_preprocessed, y_winrate, 0.3)
-    # # XGBRegressor(n_estimators=3, max_depth=5)
-    # print(score)
+    # df_for_model = get_X_y(X_preprocessed, y_winrate)
+    # model, X_test_preprocessed, y_test = train_ML(LinearRegression(), df_for_model, 0.3)
+    # score = evaluate_ML_model(model, X_test_preprocessed, y_test)
+    # X_new = df_for_model.iloc[[25], :-1] # Test de pred d'une ligne au pif
+    # y_pred = pred(model, X_new)
 
-    # # Test d'une ligne au pif
-    # X_new = X_preprocessed.iloc[[5]]
-    # pred(model, X_new)
-
-# deep test
-    X_preprocessed = load_and_preprocess_and_save()
+# DL tests
+    # X_preprocessed = load_and_preprocess_and_save()
+    X_preprocessed = load_preprocessed_data_from_database()
     y_winrate,y = new_y_creator(1997)
-    model, eval = train_deep("dense",X_preprocessed, y, 0.3)
-    print(eval)
+    df_for_model = get_X_y(X_preprocessed, y)
+    model, X_test_preprocessed, y_test = train_DL("dense", df_for_model, 0.3)
+    score = evaluate_DL_model(model, X_test_preprocessed, y_test)
+    X_new = df_for_model.iloc[[125], :-1] # Test de pred d'une ligne au pif
+    y_pred = pred(model, X_new)
