@@ -39,7 +39,7 @@ def get_new_team_stats_per_season(dico_player_and_team: dict,
                                            data_preprocessed: pd.DataFrame,
                                            season: int = 2025):
     """
-    Get some player's stats per season per team of last season (2025)
+    Get new team player's stats per season per team of last season (2025)
     """
     the_n_players = pd.DataFrame()
     for player,team in dico_player_and_team.items():
@@ -116,7 +116,6 @@ def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame, ML = 
     all_season_team_starters_stats = []
     season_and_team_key = []
     all_season_team_starters_stats_flattened = []
-    all_season_team_starters_stats_embedded = []
 
     for season in X_preprocessed["season"].unique():
         for team in X_preprocessed["team"].unique():
@@ -139,7 +138,8 @@ def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame, ML = 
             [np.concatenate([x if isinstance(x, np.ndarray) else np.array([x]) \
             for x in row]) for row in all_season_team_starters_stats_embedded
             ]
-        return all_season_team_starters_stats_embedded_flattened, season_and_team_key
+        return all_season_team_starters_stats_embedded_flattened, season_and_team_key, all_season_team_starters_stats
+
     else :
         all_season_team_starters_stats_flattened = \
             [np.concatenate([x if isinstance(x, np.ndarray) else np.array([x]) \
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     # print(pd.DataFrame(temp1))
     y_win_rate, y = new_y_creator(1997)
     df_X_y = get_X_y(X, y_win_rate)
-    model, X_test_preproc, y_test = train_ML(LinearRegression(),df_X_y, 0.3)
+    model, X_test_preproc, y_test = train_ML(LinearRegression(),df_X_y, 0.1)
 
     y_pred = pred(model, the_n_players_flattened)
     print("✅✅✅✅✅", y_pred)
