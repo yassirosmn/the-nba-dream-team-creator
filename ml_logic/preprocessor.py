@@ -9,11 +9,12 @@ from params import *
 from registry import load_data_from_database, save_preprocessed_data
 
 
-def preprocess_features_and_save(X: pd.DataFrame) -> np.ndarray:
+def preprocess_features(X: pd.DataFrame) -> np.ndarray:
     """
     Scikit-learn pipeline that transforms a cleaned dataset of shape (_, XXXXX)
     into a preprocessed one of fixed shape (_, XXXX).
     """
+    print("⏳ Preprocessing in progress.. ⏳")
     X_dropped = X.drop(columns=COLUMNS_TO_DROP)
     X_dropped_season_drop = X_dropped.drop(columns=["season"])
     X_dropped_season_drop_num = X_dropped_season_drop.select_dtypes(include="number")
@@ -35,11 +36,12 @@ def preprocess_features_and_save(X: pd.DataFrame) -> np.ndarray:
     X_preprocessed = pd.concat([X_dropped[["season"]], X_dropped.select_dtypes(exclude="number"), X_num], axis=1)
 
 
-    print("✅ X_preprocessed, with shape", X_preprocessed.shape)
-    save_preprocessed_data(X_preprocessed)
+    print("✅ Data preprocessed, with shape", X_preprocessed.shape)
+
+    
     return X_preprocessed
 
 # Tests
 if __name__ == "__main__":
     X = load_data_from_database()
-    X_processed = preprocess_features_and_save(X)
+    X_processed = preprocess_features(X)
