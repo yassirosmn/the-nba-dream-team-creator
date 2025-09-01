@@ -3,47 +3,53 @@ import pandas as pd
 
 from ml_logic.data import load_data, player_full_data_df
 
-# from colorama import Fore, Style
-# from tensorflow import keras
-# from google.cloud import storage
 
-# from taxifare.params import *
-# import mlflow
-# from mlflow.tracking import MlflowClient
-
-def save_player_data_to_database() -> None:
+def load_csvs_and_save_data_to_database() -> None:
     '''
         Saves the full database (after merging all DFs) in local
     '''
+    print("⏳ Saving to Database... ⏳")
     df = load_data()
     X = player_full_data_df(df, 1997)
     X.to_pickle("./database_folder/player_full_database.pkl")
-    print("✅ Database saved to database")
-
+    print("✅ Saved to database !")
 
 def load_data_from_database() -> pd.DataFrame:
     '''
         Saves the full database (after merging all DFs) in local
     '''
-    df = pd.read_pickle("./database_folder/player_full_database.pkl")
-    print("✅ Database loaded from database")
-    return df
+    print("⏳ Loading Database.. ⏳")
+    try:
+        df = pd.read_pickle("./database_folder/player_full_database.pkl")
+        print("✅ Database loaded !")
 
+    except:
+            print(f"\n❌❌ No database found at path : ./database_folder/")
+            return None
+
+    return df
 
 def save_preprocessed_data(df: pd.DataFrame) -> None:
     '''
         Saves the full database (after merging all DFs) in local
     '''
+    print("⏳ Saving preprocessed data.. ⏳")
     df.to_pickle("./database_folder/data_preprocessed.pkl")
-    print("✅ Preprocessed data saved to database")
-
+    print("✅ Preprocessed data saved to database !")
 
 def load_preprocessed_data_from_database() -> pd.DataFrame:
     '''
         Saves the full database (after merging all DFs) in local
     '''
-    df = pd.read_pickle("./database_folder/data_preprocessed.pkl")
-    print("✅ Preprocessed data loaded from database")
+    print("⏳ Loading preprocessed data.. ⏳")
+    try:
+        df = pd.read_pickle("./database_folder/data_preprocessed.pkl")
+        print("✅ Preprocessed data loaded from database !")
+
+    except:
+            print(f"\n❌❌ No preprocessed data found at path : ./database_folder/")
+            return None
+
     return df
 
 
@@ -222,16 +228,18 @@ def load_preprocessed_data_from_database() -> pd.DataFrame:
 if __name__ == "__main__":
     from ml_logic.preprocessor import preprocess_features
     # Save database
-    save_player_data_to_database()
+    load_csvs_and_save_data_to_database()
 
     # Load database from local
     df = load_data_from_database()
     print(df.head())
 
-    # Save preprocessed data
+    # Preprocess data
     X_prep = preprocess_features(df)
+
+    # Save preprocessed data
     save_preprocessed_data(X_prep)
 
     # Load preprocessed data
     X = load_preprocessed_data_from_database()
-    print(X.head())
+    print(f"\n ➡️ ➡️  Displaying first rows :\n{X.head()}")
