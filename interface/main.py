@@ -103,17 +103,17 @@ def train_DL(model_type , X_teams_preprocessed, y, split_ratio=0.1):
     val_length = int((len(X_teams_preprocessed) - test_length) * split_ratio)
     train_length = len(X_teams_preprocessed) - val_length - test_length
 
+
     # Create X's
-    X_train_preprocessed = X_teams_preprocessed.iloc[:train_length, :]
-    X_val_preprocessed = X_teams_preprocessed.iloc[train_length: train_length + val_length, :]
-    X_test_preprocessed = X_teams_preprocessed.iloc[train_length+val_length:, :]
+    X_train_preprocessed = X_teams_preprocessed[:train_length]
+    print("💛❤️", np.shape(X_train_preprocessed))
+    X_val_preprocessed = X_teams_preprocessed[train_length: train_length + val_length]
+    X_test_preprocessed = X_teams_preprocessed[train_length+val_length:]
 
     # Create y's
-    y_train = y.iloc[:train_length, :]
-    y_val = y.iloc[train_length: train_length + val_length, :]
-    y_test = y.iloc[train_length+val_length:, :]
-
-    print("Shape of X_train_preprocessed :", X_train_preprocessed.shape)
+    y_train = y[:train_length]
+    y_val = y[train_length: train_length + val_length]
+    y_test = y[train_length+val_length:]
 
     # Initialize deep model :
     if model_type == "dense":
@@ -177,20 +177,24 @@ def pred(model, X_new_preprocessed: pd.DataFrame=None):
 if __name__ == '__main__':
 
 # ML tests
-    X_preprocessed = load_and_preprocess_and_save()
-    y_winrate, y = new_y_creator(1997)
-    df_for_model = get_X_y(X_preprocessed, y_winrate)
-    model, X_test_preprocessed, y_test = train_ML(LinearRegression(), df_for_model, 0.3)
-    score = evaluate_ML_model(model, X_test_preprocessed, y_test)
-    X_new = df_for_model.iloc[[25], :-1] # Test de pred d'une ligne au pif
-    y_pred = pred(model, X_new)
+    # X_preprocessed = load_and_preprocess_and_save()
+    # y_winrate, y = new_y_creator(1997)
+    # df_for_model = get_X_y(X_preprocessed, y_winrate)
+    # model, X_test_preprocessed, y_test = train_ML(LinearRegression(), df_for_model, 0.3)
+    # score = evaluate_ML_model(model, X_test_preprocessed, y_test)
+    # X_new = df_for_model.iloc[[25], :-1] # Test de pred d'une ligne au pif
+    # y_pred = pred(model, X_new)
 
 # DL tests
-    # # X_preprocessed = load_and_preprocess_and_save()
-    # X_preprocessed = load_preprocessed_data_from_database()
-    # y_winrate,y = new_y_creator(1997)
-    # df_for_model = get_X_y(X_preprocessed, y)
-    # model, X_test_preprocessed, y_test = train_DL("dense", df_for_model, 0.3)
-    # score = evaluate_DL_model(model, X_test_preprocessed, y_test)
-    # X_new = df_for_model.iloc[[125], :-1] # Test de pred d'une ligne au pif
-    # y_pred = pred(model, X_new)
+    # X_preprocessed = load_and_preprocess_and_save()
+    X_preprocessed = load_preprocessed_data_from_database()
+    y_winrate, y_df = new_y_creator(1997)
+    y = y_df["global_score"]
+    X, _, __ = get_all_seasons_all_teams_starters_stats(X_preprocessed, False)
+    model, X_test_preprocessed, y_test = train_DL("dense", np.array(X), np.array(y), 0.1)
+    score = evaluate_DL_model(model, X_test_preprocessed, y_test)
+
+    X_new = X_test_preprocessed[15, :] # Test de pred d'une ligne au pif
+    print("🎯", np.shape(X_new))
+
+    y_pred = pred(model, X_new)

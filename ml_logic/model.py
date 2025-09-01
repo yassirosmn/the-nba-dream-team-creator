@@ -37,7 +37,7 @@ def initialize_deep_dense_model(X_train):
     #reg_l1 = regularizers.L1(0.01)
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     model = Sequential()
-    model.add(Input(shape = (X_train.shape[1],X_train.shape[2],1) ))
+    model.add(Input(shape = (40, 7)))
 
     ### First layer
     model.add(layers.Dense(300, activation='relu'))
@@ -97,44 +97,6 @@ def fit_deep_model(model,X_train,y_train,validation_data, batch_size = 32, epoch
 
 if __name__ == "__main__":
 
-    from data import load_data, player_full_data_df, y_creator
-    from preprocessor import preprocess_features
-    from sklearn.linear_model import LogisticRegression, LinearRegression
-    from xgboost import XGBRegressor
-    import pandas as pd
-    from sklearn.model_selection import cross_validate
 
-
-    dfs = load_data()
-    X = player_full_data_df(dfs, 1997)
-
-    y = y_creator(1997)
-
-    X_preprocessed = preprocess_features(X)
-
-    model = initialize_model(model_type= XGBRegressor(), input_shape = None)
-
-    model.fit(X_preprocessed,y)
-
-    # model = compile_model(model=model, learning_rate=0.0005)
-
-    # model = train_model(model=model,
-    #                              X=X_preprocessed,
-    #                              y=y,
-    #                              batch_size=256,
-    #                              patience=2,
-    #                              validation_data=None,
-    #                              validation_split=0.3)
-
-    # metrics = evaluate_model(model = model,
-    #                          X = X_preprocessed,
-    #                          y = y,
-    #                          batch_size=64)
-
-    print(model.score(X_preprocessed,y))
-
-    # cv_results = cross_validate(model, X_preprocessed, y, cv=5)
-
-    # accuracy = cv_results["test_score"].mean()
 
     print("Test good (✅ pour Flavian)")
