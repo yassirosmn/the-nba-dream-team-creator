@@ -11,37 +11,55 @@ from ml_logic.registry import load_data_from_database, save_data
 
 def preprocess_features(X: pd.DataFrame) -> np.ndarray:
     """
-    Scikit-learn pipeline that transforms a cleaned dataset of shape (_, XXXXX)
+    Transforms a cleaned dataset of shape (_, XXXXX)
     into a preprocessed one of fixed shape (_, XXXX).
     """
-    print("⏳ Preprocessing in progress.. ⏳")
-    X_dropped = X.drop(columns=COLUMNS_TO_DROP)
-    X_dropped_season_drop = X_dropped.drop(columns=["season"])
-    X_dropped_season_drop_num = X_dropped_season_drop.select_dtypes(include="number")
+    # Séparation (1997-2024) et 2025
+    X_1997_2024 = X.query("season < 2025")
+    X_2025 = X.query("season == 2025")
+
+    print("⏳ Preprocessing in progress... ⏳")
+
+    ## 1997-2024 :
+    # Dropping useless columns
+    X_1997_2024_dropped = X_1997_2024.drop(columns=COLUMNS_TO_DROP)
+    # Dropping "season" because we don't want to scale that
+    X_1997_2024_dropped_season_drop = X_1997_2024_dropped.drop(columns=["season"])
+    # Selecting only numerical columns
+    X_1997_2024_dropped_season_drop_num = X_1997_2024_dropped_season_drop.select_dtypes(include="number")
+
+    ## 2025 :
+    # Dropping useless columns
+    X_2025_dropped = X_2025.drop(columns=COLUMNS_TO_DROP)
+    # Dropping "season" because we don't want to scale that
+    X_2025_dropped_season_drop = X_2025_dropped.drop(columns=["season"])
+    # Selecting only numerical columns
+    X_2025_dropped_season_drop_num = X_2025_dropped_season_drop.select_dtypes(include="number")
 
 
     # Imputing NaN values
     imputer = KNNImputer().set_output(transform='pandas')
-    imputer.fit(X_dropped_season_drop_num)
-    # Call the "transform" method on the object
-    X_dropped_season_drop_imputed = imputer.transform(X_dropped_season_drop_num)
-
+    imputer.fit(X_1997_2024_dropped_season_drop_num)
+    X_1997_2024_dropped_season_drop_imputed = imputer.transform(X_1997_2024_dropped_season_drop_num)
+    X_2025_dropped_season_drop_imputed = imputer.transform(X_2025_dropped_season_drop_num)
 
     # Scaling features
     robust_scaler = RobustScaler().set_output(transform='pandas')
-    robust_scaler.fit(X_dropped_season_drop_imputed)
-    X_num = robust_scaler.transform(X_dropped_season_drop_imputed)
+    robust_scaler.fit(X_1997_2024_dropped_season_drop_imputed)
+    X_1997_2024_num = robust_scaler.transform(X_1997_2024_dropped_season_drop_imputed)
+    X_2025_num = robust_scaler.transform(X_2025_dropped_season_drop_imputed)
 
-    # Concatenation
-    X_preprocessed = pd.concat([X_dropped[["season"]], X_dropped.select_dtypes(exclude="number"), X_num], axis=1)
+    # Concatenation to get back the non numerical columns
+    X_1997_2024_preprocessed = pd.concat([X_1997_2024_dropped[["season"]], X_1997_2024_dropped.select_dtypes(exclude="number"), X_1997_2024_num], axis=1)
+    X_2025_transformed = pd.concat([X_2025_dropped[["season"]], X_2025_dropped.select_dtypes(exclude="number"), X_2025_num], axis=1)
+
+    print("✅ Data preprocessed (X from 1997 to 2024), with shape", X_1997_2024_preprocessed.shape)
+    print("✅ Data transformed (2025), with shape", X_2025_transformed.shape)
 
 
-    print("✅ Data preprocessed, with shape", X_preprocessed.shape)
-
-
-    return X_preprocessed
+    return X_1997_2024_preprocessed, X_2025_transformed
 
 # Tests
 if __name__ == "__main__":
     X = load_data_from_database()
-    X_processed = preprocess_features(X)
+    X_1997_2024_preprocessed, X_2025_transformed = preprocess_features(X)

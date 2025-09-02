@@ -4,6 +4,7 @@ from typing import Tuple
 
 from tensorflow import keras
 from keras import Model, Sequential, Input, layers, regularizers, optimizers
+from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 
 
@@ -85,11 +86,12 @@ def initialize_deep_cnn_model(X_train):
     cnn.add(layers.Dense(1, activation="relu"))
     return cnn
 
-def compile_deep_model(model):
+def compile_deep_model(model,learning_rate = 0.001,epsilon = 1e-6):
     '''return a compiled model suited for the CIFAR-10 task'''
+    pimp_my_optimizer = Adam(learning_rate=learning_rate,epsilon=epsilon)
     model.compile(
         loss = 'mae',
-        optimizer = 'adam',
+        optimizer = pimp_my_optimizer,
         metrics = ['mae']
     )
     return model
