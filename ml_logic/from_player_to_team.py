@@ -23,12 +23,6 @@ def get_player_stats_per_team_per_season(player: str,
         (preprocessed_database_players_2025["season"] == season) & (preprocessed_database_players_2025["team"] == team) & (preprocessed_database_players_2025["player"] == player)]
     return stats_of_player_of_one_team_of_one_season
 
-# def create_dico_player_and_team(player: str, team:str)-> dict:
-
-#     my_dico = {}
-
-#     return my_dico
-
 def flatten_df(df: pd.DataFrame)-> pd.DataFrame:
     df_flat = pd.DataFrame([df.values.flatten()],
                        columns=[f"{col}" for i in range(len(df)) for col in df.columns])
@@ -45,16 +39,15 @@ def get_new_team_stats_per_season(dico_player_and_team: dict,
     for player,team in dico_player_and_team.items():
         player_stats = get_player_stats_per_team_per_season(player, team, data_preprocessed)
         the_n_players = pd.concat([the_n_players, player_stats], ignore_index=True)
-
     #Embedding for Deep
     ## create list for embedding
     the_n_players = the_n_players[STATS_TO_KEEP]
     the_n_players_list = the_n_players.values.tolist()
-    the_n_players_embedded = player_embedder_transform(the_n_players_list)
+    the_n_players_embedded = player_embedder_transform(np.array(the_n_players_list))
+    the_n_players_embedded_flattened = np.expand_dims(the_n_players_embedded.reshape(5*13,7), 0)
     # Flatten df for ML
     the_n_players_flattened = flatten_df(the_n_players)
-
-    return the_n_players_embedded, the_n_players_flattened
+    return the_n_players_embedded_flattened, the_n_players_flattened
 
 #########################
 
