@@ -94,22 +94,17 @@ def train_DL(model_type , X_teams_preprocessed, y, split_ratio=0.1, lr= 0.001 ,e
         Trains model, model type should be ['dense','rnn','cnn']
         returns the model trained and the X_test_preproc and y_test as numpy.arrays
     """
-    # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
-    test_length = int(len(X_teams_preprocessed) * split_ratio)
-    val_length = int((len(X_teams_preprocessed) - test_length) * 3*split_ratio)
-    train_length = len(X_teams_preprocessed) - val_length - test_length
-
+    # Create (X_train_processed, y_train, X_val_processed, y_val) - sans test
+    val_length = int(len(X_teams_preprocessed) * split_ratio)
+    train_length = len(X_teams_preprocessed) - val_length
 
     # Create X's
-    X_train_preprocessed = X_teams_preprocessed[test_length + val_length:]
-    X_val_preprocessed = X_teams_preprocessed[test_length:test_length + val_length]
-    X_test_preprocessed = X_teams_preprocessed[:test_length]
-
+    X_train_preprocessed = X_teams_preprocessed[val_length:]
+    X_val_preprocessed = X_teams_preprocessed[:val_length]
 
     # Create y's
-    y_train = y[test_length + val_length:]
-    y_val = y[test_length:test_length + val_length]
-    y_test = y[:test_length]
+    y_train = y[val_length:]
+    y_val = y[:val_length]
 
 
     # Initialize deep model :
@@ -128,7 +123,7 @@ def train_DL(model_type , X_teams_preprocessed, y, split_ratio=0.1, lr= 0.001 ,e
     history,model = fit_deep_model(model, X_train_preprocessed, y_train, validation_data=(X_val_preprocessed,y_val), verbose=verbose)
     print("✅ train_DL() done ")
 
-    return model, history, X_test_preprocessed, y_test
+    return model, history
 
 
 def evaluate_ML_model(model, X_test, y_test) -> pd.DataFrame:
@@ -183,37 +178,44 @@ if __name__ == '__main__':
     # X_1997_2024_preprocessed = load_preprocessed_data_from_database()
     print("\n")
 
-    y_winrate, y_df = new_y_creator(1997)
-    X, keys, __ = get_all_seasons_all_teams_starters_stats(X_1997_2024_preprocessed, False)
-    y_df_classé = pd.DataFrame(keys, columns=["PM"]).merge(y_winrate,
-                                                           how="left",
-                                                           on="PM")
-    # y = y_df_classé["global_score"]
-    y = y_df_classé["winrate"]
+    y_winrate_1997_2024_df, y_1997_2024_df, y_winrate_2025_df,y_2025_df = new_y_creator(1997)
+
+    y_1997_2024= y_1997_2024_df["global_score"]            #pandas_series
+    y_2025 = y_2025_df["global_score"]            #pandas_series
+
+    y_winrate_1997_2024 = y_winrate_1997_2024_df['winrate'] #pandas_series
+    y_winrate_2025 = y_winrate_2025_df['winrate'] #pandas_series
+
+    X_1997_2024, _, __ = get_all_seasons_all_teams_starters_stats(X_1997_2024_preprocessed, False)
+    X_2025, _, __ = get_all_seasons_all_teams_starters_stats(X_2025_transformed, False)
     print("✅ X and y created")
     print("\n")
 
-    model, history, X_test_preprocessed, y_test = train_DL("dense",
-                                                           np.array(X),
-                                                           np.array(y),
-                                                           split_ratio=0.04,
-                                                           verbose=0)
+    model, history = train_DL("dense",
+                              np.array(X_1997_2024),
+                              np.array(y_winrate_1997_2024),
+                              split_ratio=0.1,
+                              lr=0.005,
+                              epsilon=3e-2)
+
     print("🔎 loss : ", history.history["loss"][-1])
     print("🔎 mae : ", history.history["mae"][-1])
     print("🔎 val_loss : ", history.history["val_loss"][-1])
     print("🔎 val_mae : ", history.history["val_mae"][-1])
 
     print("\n")
-    score = evaluate_DL_model(model, X_test_preprocessed, y_test)
+    score = evaluate_DL_model(model,
+                                np.array(X_2025),
+                                np.array(y_winrate_2025))
 
-    # # Prédiction de toute les lignes du X_test :
+    # Prédiction de toute les lignes du X_test :
     print("\n")
     y_preds = []
     y_trues = []
-    for row in range(len(X_test_preprocessed)):
-        X_new = X_test_preprocessed[row:row+1, :, :] # Test de pred d'une ligne au pif
+    for row in range(len(X_2025)):
+        X_new = np.array(X_2025)[row:row+1, :, :] # Test de pred d'une ligne au pif
         y_preds.append(pred(model, X_new)[0][0])
-        y_trues.append(y_test[row:row+1][0])
+        y_trues.append(np.array(y_winrate_2025)[row:row+1][0])
     df_trues_preds = pd.DataFrame()
     df_trues_preds["y_trues"] = y_trues
     df_trues_preds["y_preds"] = y_preds
