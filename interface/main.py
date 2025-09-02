@@ -58,26 +58,22 @@ def get_X_y(X_preprocessed, y)-> pd.DataFrame:
 def train_ML(model_type, df_preprocessed_teams_with_key_merged_y_drop_key, split_ratio):
     """
         Trains model
-        returns the model trained and the X_test_preproc and y_test as DFs
+        returns the model trained
     """
-    # Create (X_train_processed, y_train, X_val_processed, y_val, X_test_preprocessed, y_test)
-    test_length = int(len(df_preprocessed_teams_with_key_merged_y_drop_key) * split_ratio)
-    val_length = int((len(df_preprocessed_teams_with_key_merged_y_drop_key)-test_length) * split_ratio)
-    train_length = len(df_preprocessed_teams_with_key_merged_y_drop_key) - val_length - test_length
+    # Create (X_train_processed, y_train, X_val_processed, y_val) - sans test
+    val_length = int(len(df_preprocessed_teams_with_key_merged_y_drop_key) * split_ratio)
+    train_length = len(df_preprocessed_teams_with_key_merged_y_drop_key) - val_length
 
-    df_train_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[test_length + val_length:].sample(frac=1) # Shuffle datasets to improve training
-    df_val_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[test_length:test_length + val_length].sample(frac=1)
-    df_test_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[:test_length].sample(frac=1)
+    df_train_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[val_length:].sample(frac=1)  # Shuffle datasets to improve training
+    df_val_preprocessed = df_preprocessed_teams_with_key_merged_y_drop_key.iloc[:val_length].sample(frac=1)
 
     # Create X's
     X_train_preprocessed = df_train_preprocessed.iloc[:, :-1]
     X_val_preprocessed = df_val_preprocessed.iloc[:, :-1]
-    X_test_preprocessed = df_test_preprocessed.iloc[:, :-1]
 
     # Create y's
     y_train = pd.DataFrame(df_train_preprocessed.iloc[:, -1])
     y_val = pd.DataFrame(df_val_preprocessed.iloc[:, -1])
-    y_test = pd.DataFrame(df_test_preprocessed.iloc[:, -1])
 
     # Initialize ML model
     model = initialize_model(model_type)
@@ -86,13 +82,13 @@ def train_ML(model_type, df_preprocessed_teams_with_key_merged_y_drop_key, split
     model = fit_model(model, X_train_preprocessed, y_train)
     print("\n✅ train_ML() done \n")
 
-    return model, X_test_preprocessed, y_test
+    return model
 
 
 def train_DL(model_type , X_teams_preprocessed, y, split_ratio=0.1, lr= 0.001 ,epsilon=1e-7, verbose = "auto"):
     """
         Trains model, model type should be ['dense','rnn','cnn']
-        returns the model trained and the X_test_preproc and y_test as numpy.arrays
+        returns the model trained and history
     """
     # Create (X_train_processed, y_train, X_val_processed, y_val) - sans test
     val_length = int(len(X_teams_preprocessed) * split_ratio)
