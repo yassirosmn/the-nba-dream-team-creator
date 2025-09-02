@@ -9,7 +9,7 @@ def player_embedder_transform(X_to_embed):
 
     #Embed
     embedder.compile("rmsprop","mse")
-    X_transform = embedder.predict(np.array(X_to_embed))
+    X_transform = embedder.predict(X_to_embed)
 
     return X_transform
 

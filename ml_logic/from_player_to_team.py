@@ -120,7 +120,7 @@ def get_all_seasons_all_teams_starters_stats(X_preprocessed: pd.DataFrame, ML = 
                 season_and_team_key.append(key)
 
     if ML == False :
-        all_season_team_starters_stats_embedded = player_embedder_transform(all_season_team_starters_stats)
+        all_season_team_starters_stats_embedded = player_embedder_transform(np.array(all_season_team_starters_stats))
         all_season_team_starters_stats_embedded_flattened = \
             [np.concatenate([x if isinstance(x, np.ndarray) else np.array([x]) \
             for x in row]) for row in all_season_team_starters_stats_embedded

@@ -7,7 +7,7 @@ from params import *
 from ml_logic.data import load_data, player_full_data_df, new_y_creator
 from ml_logic.model import initialize_model, fit_model, score_model,initialize_deep_dense_model, compile_deep_model, fit_deep_model, initialize_deep_cnn_model, initialize_deep_rnn_model
 from ml_logic.from_player_to_team import get_all_seasons_all_teams_starters_stats
-from ml_logic.registry import load_csvs_and_save_data_to_database, save_data, load_data_from_database, load_preprocessed_data_from_database
+from ml_logic.registry import load_csvs_and_save_data_to_database, save_data, load_data_from_database, load_preprocessed_data_from_database, save_model
 
 # Import preprocessing function
 from ml_logic.preprocessor import preprocess_features
@@ -159,28 +159,19 @@ def pred(model, X_new_preprocessed: pd.DataFrame=None):
 
 if __name__ == '__main__':
 
-# ML tests
-    # X_1997_2024_preprocessed, X_2025_transformed = load_and_preprocess_and_save()
-    # y_winrate, y = new_y_creator(1997)
-    # df_for_model = get_X_y(X_preprocessed, y_winrate)
-    # model, X_test_preprocessed, y_test = train_ML(LinearRegression(), df_for_model, 0.3)
-    # score = evaluate_ML_model(model, X_test_preprocessed, y_test)
-    # X_new = df_for_model.iloc[[25], :-1] # Test de pred d'une ligne au pif
-    # y_pred = pred(model, X_new)
-
 # DL tests
     print("\n")
     X_1997_2024_preprocessed, X_2025_transformed = load_and_preprocess_and_save()
     # X_1997_2024_preprocessed = load_preprocessed_data_from_database()
     print("\n")
 
-    y_winrate_1997_2024_df, y_1997_2024_df, y_winrate_2025_df,y_2025_df = new_y_creator(1997)
+    y_winrate_1997_2024_df, y_1997_2024_df, y_winrate_2025_df, y_2025_df = new_y_creator(1997)
 
     y_1997_2024= y_1997_2024_df["global_score"]            #pandas_series
-    y_2025 = y_2025_df["global_score"]            #pandas_series
+    y_2025 = y_2025_df["global_score"]                     #pandas_series
 
     y_winrate_1997_2024 = y_winrate_1997_2024_df['winrate'] #pandas_series
-    y_winrate_2025 = y_winrate_2025_df['winrate'] #pandas_series
+    y_winrate_2025 = y_winrate_2025_df['winrate']           #pandas_series
 
     X_1997_2024, _, __ = get_all_seasons_all_teams_starters_stats(X_1997_2024_preprocessed, False)
     X_2025, _, __ = get_all_seasons_all_teams_starters_stats(X_2025_transformed, False)
@@ -198,6 +189,8 @@ if __name__ == '__main__':
     print("🔎 mae : ", history.history["mae"][-1])
     print("🔎 val_loss : ", history.history["val_loss"][-1])
     print("🔎 val_mae : ", history.history["val_mae"][-1])
+
+    save_model(model)
 
     print("\n")
     score = evaluate_DL_model(model,
