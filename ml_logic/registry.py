@@ -80,11 +80,11 @@ def load_data_from_database() -> pd.DataFrame:
 
 def save_data(df: pd.DataFrame, name:str) -> None:
     '''
-        Saves the preprocessed to the database
+        Saves the data to the database
     '''
-    print("⏳ Saving preprocessed data.. ⏳")
+    print("⏳ Saving data.. ⏳")
     df.to_pickle(f"{DATABASE_PATH}{name}.pkl")
-    print("✅ Preprocessed data saved locally !")
+    print("✅ Data saved locally !")
 
 def load_preprocessed_data_from_database() -> pd.DataFrame:
     '''
