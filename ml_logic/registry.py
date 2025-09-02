@@ -173,7 +173,7 @@ def load_model(model_type_is_deep: bool = True) -> keras.Model:
 if __name__ == "__main__":
     # from ml_logic.preprocessor import preprocess_features
     # # Save database
-    # load_csvs_and_save_data_to_database()
+    load_csvs_and_save_data_to_database()
 
     # # Load dfs
     # dfs,_,_,_,_ = load_dfs_from_database()
@@ -203,4 +203,4 @@ if __name__ == "__main__":
     # save_model(model, False)
 
     # Test de load model
-    model = load_model(False)
+    # model = load_model(False)
