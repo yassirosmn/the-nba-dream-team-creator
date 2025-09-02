@@ -149,7 +149,7 @@ def player_full_data_df(list_dataframe,year):
 
 def player_starting_5_data(dfs, year):
     return player_full_data_df(dfs, year).query("starting_5 == 1")
-
+git 
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -286,15 +286,27 @@ def new_y_creator(year):
     # Calcul d'un score global (moyenne entre taux de victoire et score de playoffs)
     y_base['global_score'] = y_base.apply(lambda row : (row.winrate + row.Playoff_score) / 2, axis = 1)
 
-    # Conservation uniquement de la colonne score global
-    y = y_base[['global_score','PM']]
-    y.drop_duplicates(inplace=True)
-    y.reset_index(drop=True, inplace=True)
-    y_winrate = y_base[['PM','winrate']]
-    y_winrate.drop_duplicates(inplace=True)
-    y_winrate.reset_index(drop=True, inplace=True)
+    # split y entre 1997 2024 et 2025
+    y_base_2025 = y_base.query('season == 2025')
+    y_base_1997_2024 = y_base.query('season < 2025')
+
+    # Conservation uniquement de la colonne score global 2025
+    y_2025 = y_base_2025[['global_score','PM']]
+    y_2025.drop_duplicates(inplace=True)
+    y_2025.reset_index(drop=True, inplace=True)
+    y_winrate_2025 = y_base_2025[['PM','winrate']]
+    y_winrate_2025.drop_duplicates(inplace=True)
+    y_winrate_2025.reset_index(drop=True, inplace=True)
+
+    # Conservation uniquement de la colonne score global 1997-2024
+    y_1997_2024 = y_base_1997_2024[['global_score','PM']]
+    y_1997_2024.drop_duplicates(inplace=True)
+    y_1997_2024.reset_index(drop=True, inplace=True)
+    y_winrate_1997_2024 = y_base_1997_2024[['PM','winrate']]
+    y_winrate_1997_2024.drop_duplicates(inplace=True)
+    y_winrate_1997_2024.reset_index(drop=True, inplace=True)
     # Renvoi du DataFrame final y
-    return y_winrate, y
+    return y_winrate_1997_2024, y_1997_2024, y_winrate_2025,y_2025
 
 # Tests
 if __name__ == "__main__":
