@@ -263,7 +263,7 @@ def new_y_creator(year):
     #########################
 
     # Chargement des informations des joueurs par saison
-    Player_Season_Info_df = pd.read_csv('raw_data/Player Season Info.csv')
+    Player_Season_Info_df = pd.read_csv('raw_data/Player Play By Play.csv')
 
     # Création de la base de données y
     y_base = Player_Season_Info_df[['season','team']].query(f'season >= {year}').copy(deep = True)
