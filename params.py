@@ -19,6 +19,9 @@ FILE_PATH=Path(os.environ.get("FILE_PATH", "raw_data/"))
 # Error message if file_path invalid
 assert FILE_PATH.exists(), "file_path does not exist"
 
+# Streamlit
+BASE_URL = "http://localhost:8000"
+
 # to do once done
 ## api
 ## streamlit cloud
