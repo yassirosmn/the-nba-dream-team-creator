@@ -5,6 +5,11 @@ from pathlib import Path
 
 ##################  ENV VARIABLES  ##################
 
+# Saving path for database
+DATABASE_PATH = "./database_folder/all_data/"
+
+# Saving path for trained models
+MODEL_PATH = "./database_folder/models/"
 
 FILE_PATH=Path("raw_data/")
 
