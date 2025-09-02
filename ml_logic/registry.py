@@ -1,7 +1,12 @@
 import pickle
 import pandas as pd
+import time
+import glob
 
 from ml_logic.data import load_data, player_full_data_df
+from params import *
+from tensorflow import keras
+
 
 
 def load_csvs_and_save_data_to_database() -> None:
@@ -9,47 +14,47 @@ def load_csvs_and_save_data_to_database() -> None:
         Saves the full database (after merging all DFs) in local
         Creates filtered DFs by position in 2025, and stores them to database
     '''
-    print("⏳ Saving to Database... ⏳")
+    print("⏳ Saving database locally... ⏳")
     df = load_data()
     X = player_full_data_df(df, 1997)
-    X.to_pickle("./database_folder/player_full_database.pkl")
-    print("✅ Saved to database !")
+    X.to_pickle(f"{DATABASE_PATH}player_full_database.pkl")
+    print("✅ Database saved locally !")
 
+    print("⏳ Saving 2025 filtered DFs locally... ⏳")
     X_2025_C = X.query("season == 2025 & pos == 'C'")
-    X_2025_C.to_pickle("./database_folder/X_2025_C.pkl")
+    X_2025_C.to_pickle(f"{DATABASE_PATH}X_2025_C.pkl")
 
     X_2025_SG = X.query("season == 2025 & pos == 'SG'")
-    X_2025_SG.to_pickle("./database_folder/X_2025_SG.pkl")
+    X_2025_SG.to_pickle(f"{DATABASE_PATH}X_2025_SG.pkl")
 
     X_2025_PF = X.query("season == 2025 & pos == 'PF'")
-    X_2025_PF.to_pickle("./database_folder/X_2025_PF.pkl")
+    X_2025_PF.to_pickle(f"{DATABASE_PATH}X_2025_PF.pkl")
 
     X_2025_PG = X.query("season == 2025 & pos == 'PG'")
-    X_2025_PG.to_pickle("./database_folder/X_2025_PG.pkl")
+    X_2025_PG.to_pickle(f"{DATABASE_PATH}X_2025_PG.pkl")
 
     X_2025_SF = X.query("season == 2025 & pos == 'SF'")
-    X_2025_SF.to_pickle("./database_folder/X_2025_SF.pkl")
+    X_2025_SF.to_pickle(f"{DATABASE_PATH}X_2025_SF.pkl")
 
-    print("✅ Pickles for positions saved")
-
+    print("✅ 2025 filtered DFs saved locally")
 
 def load_dfs_from_database() -> pd.DataFrame:
     '''
         Loads filtered DFs by position for 2025 from the database
     '''
-    print("⏳ Loading Database.. ⏳")
+    print("⏳ Loading locally saved 2025 filtered DFs.. ⏳")
 
     try:
-        df_2025_C = pd.read_pickle("./database_folder/X_2025_C.pkl")
-        df_2025_SG = pd.read_pickle("./database_folder/X_2025_SG.pkl")
-        df_2025_PF = pd.read_pickle("./database_folder/X_2025_PF.pkl")
-        df_2025_PG = pd.read_pickle("./database_folder/X_2025_PG.pkl")
-        df_2025_SF = pd.read_pickle("./database_folder/X_2025_SF.pkl")
+        df_2025_C = pd.read_pickle(f"{DATABASE_PATH}X_2025_C.pkl")
+        df_2025_SG = pd.read_pickle(f"{DATABASE_PATH}X_2025_SG.pkl")
+        df_2025_PF = pd.read_pickle(f"{DATABASE_PATH}X_2025_PF.pkl")
+        df_2025_PG = pd.read_pickle(f"{DATABASE_PATH}X_2025_PG.pkl")
+        df_2025_SF = pd.read_pickle(f"{DATABASE_PATH}X_2025_SF.pkl")
 
-        print("✅ Database loaded !")
+        print("✅ 2025 filtered DFs loaded from local !")
 
     except:
-            print(f"\n❌❌ No database found at path : ./database_folder/")
+            print(f"\n❌❌ No DFs found at path : {DATABASE_PATH}")
             pass
 
     return df_2025_C, df_2025_SG, df_2025_PF, df_2025_PG, df_2025_SF
@@ -61,11 +66,11 @@ def load_data_from_database() -> pd.DataFrame:
     print("⏳ Loading Database.. ⏳")
 
     try:
-        df = pd.read_pickle("./database_folder/player_full_database.pkl")
-        print("✅ Database loaded !")
+        df = pd.read_pickle(f"{DATABASE_PATH}player_full_database.pkl")
+        print("✅ Database loaded from local !")
 
     except:
-            print(f"\n❌❌ No database found at path : ./database_folder/")
+            print(f"\n❌❌ No database found at path : {DATABASE_PATH}")
             return None
 
     return df
@@ -75,8 +80,8 @@ def save_preprocessed_data(df: pd.DataFrame) -> None:
         Saves the preprocessed to the database
     '''
     print("⏳ Saving preprocessed data.. ⏳")
-    df.to_pickle("./database_folder/data_preprocessed.pkl")
-    print("✅ Preprocessed data saved to database !")
+    df.to_pickle(f"{DATABASE_PATH}data_preprocessed.pkl")
+    print("✅ Preprocessed data saved locally !")
 
 def load_preprocessed_data_from_database() -> pd.DataFrame:
     '''
@@ -84,208 +89,114 @@ def load_preprocessed_data_from_database() -> pd.DataFrame:
     '''
     print("⏳ Loading preprocessed data.. ⏳")
     try:
-        df = pd.read_pickle("./database_folder/data_preprocessed.pkl")
-        print("✅ Preprocessed data loaded from database !")
+        df = pd.read_pickle(f"{DATABASE_PATH}data_preprocessed.pkl")
+        print("✅ Preprocessed data loaded from local !")
 
     except:
-            print(f"\n❌❌ No preprocessed data found at path : ./database_folder/")
+            print(f"\n❌❌ No preprocessed data found at path : {DATABASE_PATH}")
             return None
 
     return df
 
+def save_model(model, model_type_is_deep: bool = True) -> None:
+    """
+    Persist trained model locally on the hard drive at f"{MODEL_PATH}_{timestamp}.h5"
+    - if MODEL_TARGET='mlflow', also persist it on MLflow instead of GCS (for unit 0703 only) --> unit 03 only
+    """
 
-# def save_model(model: keras.Model = None) -> None:
-#     """
-#     Persist trained model locally on the hard drive at f"{LOCAL_REGISTRY_PATH}/models/{timestamp}.h5"
-#     - if MODEL_TARGET='gcs', also persist it in your bucket on GCS at "models/{timestamp}.h5" --> unit 02 only
-#     - if MODEL_TARGET='mlflow', also persist it on MLflow instead of GCS (for unit 0703 only) --> unit 03 only
-#     """
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-#     timestamp = time.strftime("%Y%m%d-%H%M%S")
-
-#     # Save model locally
-#     model_path = os.path.join(LOCAL_REGISTRY_PATH, "models", f"{timestamp}.h5")
-#     model.save(model_path)
-
-#     print("✅ Model saved locally")
-
-#     if MODEL_TARGET == "gcs":
-#         # 🎁 We give you this piece of code as a gift. Please read it carefully! Add a breakpoint if needed!
-
-#         model_filename = model_path.split("/")[-1] # e.g. "20230208-161047.h5" for instance
-#         client = storage.Client()
-#         bucket = client.bucket(BUCKET_NAME)
-#         blob = bucket.blob(f"models/{model_filename}")
-#         blob.upload_from_filename(model_path)
-
-#         print("✅ Model saved to GCS")
-
-#         return None
-
-#     if MODEL_TARGET == "mlflow":
-#         mlflow.tensorflow.log_model(
-#             model=model,
-#             artifact_path="model",
-#             registered_model_name=MLFLOW_MODEL_NAME
-#         )
-
-#         print("✅ Model saved to MLflow")
-
-#         return None
-
-#     return None
+    ml_folder = Path(MODEL_PATH) / "deep"
+    ml_folder.mkdir(parents=True, exist_ok=True)  # crée le dossier deep si nécessaire
 
 
-# def load_model(stage="Production") -> keras.Model:
-#     """
-#     Return a saved model:
-#     - locally (latest one in alphabetical order)
-#     - or from GCS (most recent one) if MODEL_TARGET=='gcs'  --> for unit 02 only
-#     - or from MLFLOW (by "stage") if MODEL_TARGET=='mlflow' --> for unit 03 only
+    # Save model locally
+    if model_type_is_deep:
+        ml_folder = Path(MODEL_PATH) / "deep"
+        ml_folder.mkdir(parents=True, exist_ok=True)  # crée le dossier deep si nécessaire
+        model.save(f"{MODEL_PATH}/deep/model_deep_{timestamp}.h5")
+        print("✅ Model DL saved locally")
 
-#     Return None (but do not Raise) if no model is found
+    else :
+        ml_folder = Path(MODEL_PATH) / "ml"
+        ml_folder.mkdir(parents=True, exist_ok=True)  # crée le dossier ml si nécessaire
+        filename = ml_folder / f"model_ml_{timestamp}.pkl"
+        with open(filename, "wb") as f:
+            pickle.dump(model, f)
+        print("✅ Model ML saved locally")
 
-#     """
+    return None
 
-#     if MODEL_TARGET == "local":
-#         print(Fore.BLUE + f"\nLoad latest model from local registry..." + Style.RESET_ALL)
+def load_model(model_type_is_deep: bool = True) -> keras.Model:
+    """
+    Return a saved model:
+    - locally (latest one in alphabetical order)
+    Return None (but do not Raise) if no model is found
 
-#         # Get the latest model version name by the timestamp on disk
-#         local_model_directory = os.path.join(LOCAL_REGISTRY_PATH, "models")
-#         local_model_paths = glob.glob(f"{local_model_directory}/*")
+    """
 
-#         if not local_model_paths:
-#             return None
+    if model_type_is_deep:
 
-#         most_recent_model_path_on_disk = sorted(local_model_paths)[-1]
+        # Get the latest model version name by the timestamp on disk
+        local_model_paths = glob.glob(f"{MODEL_PATH}/deep/*")
 
-#         print(Fore.BLUE + f"\nLoad latest model from disk..." + Style.RESET_ALL)
+        # Si aucun model trouvé
+        if not local_model_paths:
+            return None
+        most_recent_model_path_on_disk = sorted(local_model_paths)[-1]
+        latest_model_deep = keras.models.load_model(most_recent_model_path_on_disk)
+        print("✅ Model loaded from local disk")
 
-#         latest_model = keras.models.load_model(most_recent_model_path_on_disk)
+        return latest_model_deep
 
-#         print("✅ Model loaded from local disk")
+    else:
+            folder = Path(f"{MODEL_PATH}/ml")
+            # Récupère tous les fichiers .pkl et trie par date de modification décroissante
+            pkl_files = sorted(folder.glob("*.pkl"), key=lambda f: f.stat().st_mtime, reverse=True)
 
-#         return latest_model
+            # Prend le premier (le plus récent)
+            latest_file = pkl_files[0]
 
-#     elif MODEL_TARGET == "gcs":
-#         # 🎁 We give you this piece of code as a gift. Please read it carefully! Add a breakpoint if needed!
-#         print(Fore.BLUE + f"\nLoad latest model from GCS..." + Style.RESET_ALL)
+            # Charge le modèle
+            with open(latest_file, "rb") as f:
+                latest_model_ml = pickle.load(f)
 
-#         client = storage.Client()
-#         blobs = list(client.get_bucket(BUCKET_NAME).list_blobs(prefix="model"))
+            print(f"✅ ML model loaded : {latest_file}")
 
-#         try:
-#             latest_blob = max(blobs, key=lambda x: x.updated)
-#             latest_model_path_to_save = os.path.join(LOCAL_REGISTRY_PATH, latest_blob.name)
-#             latest_blob.download_to_filename(latest_model_path_to_save)
-
-#             latest_model = keras.models.load_model(latest_model_path_to_save)
-
-#             print("✅ Latest model downloaded from cloud storage")
-
-#             return latest_model
-#         except:
-#             print(f"\n❌ No model found in GCS bucket {BUCKET_NAME}")
-
-#             return None
-
-#     elif MODEL_TARGET == "mlflow":
-#         print(Fore.BLUE + f"\nLoad [{stage}] model from MLflow..." + Style.RESET_ALL)
-
-#         # Load model from MLflow
-#         model = None
-#         mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-#         client = MlflowClient()
-
-#         try:
-#             model_versions = client.get_latest_versions(name=MLFLOW_MODEL_NAME, stages=[stage])
-#             model_uri = model_versions[0].source
-
-#             assert model_uri is not None
-#         except:
-#             print(f"\n❌ No model found with name {MLFLOW_MODEL_NAME} in stage {stage}")
-
-#             return None
-
-#         model = mlflow.tensorflow.load_model(model_uri=model_uri)
-
-#         print("✅ Model loaded from MLflow")
-#         return model
-#     else:
-#         return None
-
-
-# def mlflow_transition_model(current_stage: str, new_stage: str) -> None:
-#     """
-#     Transition the latest model from the `current_stage` to the
-#     `new_stage` and archive the existing model in `new_stage`
-#     """
-#     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-
-#     client = MlflowClient()
-
-#     version = client.get_latest_versions(name=MLFLOW_MODEL_NAME, stages=[current_stage])
-
-#     if not version:
-#         print(f"\n❌ No model found with name {MLFLOW_MODEL_NAME} in stage {current_stage}")
-#         return None
-
-#     client.transition_model_version_stage(
-#         name=MLFLOW_MODEL_NAME,
-#         version=version[0].version,
-#         stage=new_stage,
-#         archive_existing_versions=True
-#     )
-
-#     print(f"✅ Model {MLFLOW_MODEL_NAME} (version {version[0].version}) transitioned from {current_stage} to {new_stage}")
-
-#     return None
-
-
-# def mlflow_run(func):
-#     """
-#     Generic function to log params and results to MLflow along with TensorFlow auto-logging
-
-#     Args:
-#         - func (function): Function you want to run within the MLflow run
-#         - params (dict, optional): Params to add to the run in MLflow. Defaults to None.
-#         - context (str, optional): Param describing the context of the run. Defaults to "Train".
-#     """
-#     def wrapper(*args, **kwargs):
-#         mlflow.end_run()
-#         mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-#         mlflow.set_experiment(experiment_name=MLFLOW_EXPERIMENT)
-
-#         with mlflow.start_run():
-#             mlflow.tensorflow.autolog()
-#             results = func(*args, **kwargs)
-
-#         print("✅ mlflow_run auto-log done")
-
-#         return results
-#     return wrapper
+            return latest_model_ml
 
 
 if __name__ == "__main__":
-    from ml_logic.preprocessor import preprocess_features
-    # Save database
-    load_csvs_and_save_data_to_database()
+    # from ml_logic.preprocessor import preprocess_features
+    # # Save database
+    # load_csvs_and_save_data_to_database()
 
-    # Load database from local
-    df = load_data_from_database()
+    # # Load dfs
+    # dfs,_,_,_,_ = load_dfs_from_database()
+    # print(dfs.head())
 
-    print(df.head())
+    # # Load database from local
+    # df = load_data_from_database()
 
-    dfs,_,_,_,_ = load_dfs_from_database()
+    # # print(df.head())
 
-    print(dfs[["pos"]])
+    # #Preprocess data
+    # X_prep = preprocess_features(df)
 
-    '''# Preprocess data
-    X_prep = preprocess_features(df)
+    # # Save preprocessed data
+    # save_preprocessed_data(X_prep)
 
-    # Save preprocessed data
-    save_preprocessed_data(X_prep)
+    # # Load preprocessed data
+    # X_preprocessed = load_preprocessed_data_from_database()
+    # print(f"\n ➡️ ➡️  Displaying first rows :\n{X_preprocessed.head()}")
 
-    # Load preprocessed data
-    X = load_preprocessed_data_from_database()
-    print(f"\n ➡️ ➡️  Displaying first rows :\n{X.head()}")'''
+    # from ml_logic.data import new_y_creator
+    # from interface.main import get_X_y, train_ML
+    # y_winrate, y = new_y_creator(1997)
+    # df_for_model = get_X_y(X_preprocessed, y_winrate)
+    # from sklearn.linear_model import LinearRegression
+    # model, X_test_preprocessed, y_test = train_ML(LinearRegression(), df_for_model, 0.3)
+    # save_model(model, False)
+
+    # Test de load model
+    model = load_model(False)
