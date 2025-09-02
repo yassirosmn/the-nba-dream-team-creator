@@ -75,12 +75,12 @@ def load_data_from_database() -> pd.DataFrame:
 
     return df
 
-def save_preprocessed_data(df: pd.DataFrame) -> None:
+def save_data(df: pd.DataFrame, name:str) -> None:
     '''
         Saves the preprocessed to the database
     '''
     print("⏳ Saving preprocessed data.. ⏳")
-    df.to_pickle(f"{DATABASE_PATH}data_preprocessed.pkl")
+    df.to_pickle(f"{DATABASE_PATH}{name}.pkl")
     print("✅ Preprocessed data saved locally !")
 
 def load_preprocessed_data_from_database() -> pd.DataFrame:
@@ -106,20 +106,21 @@ def save_model(model, model_type_is_deep: bool = True) -> None:
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-    ml_folder = Path(MODEL_PATH) / "deep"
-    ml_folder.mkdir(parents=True, exist_ok=True)  # crée le dossier deep si nécessaire
+    # Create "models "folder if not existing
+    models_folder = Path(MODEL_PATH)
+    models_folder.mkdir(parents=True, exist_ok=True)
 
 
     # Save model locally
     if model_type_is_deep:
         ml_folder = Path(MODEL_PATH) / "deep"
-        ml_folder.mkdir(parents=True, exist_ok=True)  # crée le dossier deep si nécessaire
+        ml_folder.mkdir(parents=True, exist_ok=True)  # Creates folder if not existing
         model.save(f"{MODEL_PATH}/deep/model_deep_{timestamp}.h5")
         print("✅ Model DL saved locally")
 
     else :
         ml_folder = Path(MODEL_PATH) / "ml"
-        ml_folder.mkdir(parents=True, exist_ok=True)  # crée le dossier ml si nécessaire
+        ml_folder.mkdir(parents=True, exist_ok=True)  # Creates folder if not existing
         filename = ml_folder / f"model_ml_{timestamp}.pkl"
         with open(filename, "wb") as f:
             pickle.dump(model, f)
