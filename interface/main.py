@@ -27,11 +27,13 @@ def load_and_preprocess_and_save():
     load_csvs_and_save_data_to_database()
     X = load_data_from_database()
     # Process data
-    X_preprocessed = preprocess_features(X)
+    X_1997_2024_preprocessed, X_2025_transformed = preprocess_features(X)
     # Save preprocessed data to database
-    save_data(X_preprocessed, "data_preprocessed")
+    save_data(X_1997_2024_preprocessed, "data_preprocessed")
+    save_data(X_2025_transformed,"X_2025_transformed")
 
-    return X_preprocessed
+
+    return X_1997_2024_preprocessed, X_2025_transformed
 
 
 def get_X_y(X_preprocessed, y)-> pd.DataFrame:
@@ -87,7 +89,7 @@ def train_ML(model_type, df_preprocessed_teams_with_key_merged_y_drop_key, split
     return model, X_test_preprocessed, y_test
 
 
-def train_DL(model_type , X_teams_preprocessed, y, split_ratio=0.1, verbose = "auto"):
+def train_DL(model_type , X_teams_preprocessed, y, split_ratio=0.1, lr= 0.001 ,epsilon=1e-7, verbose = "auto"):
     """
         Trains model, model type should be ['dense','rnn','cnn']
         returns the model trained and the X_test_preproc and y_test as numpy.arrays
@@ -119,7 +121,7 @@ def train_DL(model_type , X_teams_preprocessed, y, split_ratio=0.1, verbose = "a
         model = initialize_deep_rnn_model(X_train_preprocessed)
 
     # Compile DL model
-    model = compile_deep_model(model)
+    model = compile_deep_model(model,learning_rate=lr, epsilon=epsilon)
 
     # Train DL model
     print("▶️ train_DL() begin ")
@@ -167,7 +169,7 @@ def pred(model, X_new_preprocessed: pd.DataFrame=None):
 if __name__ == '__main__':
 
 # ML tests
-    # X_preprocessed = load_and_preprocess_and_save()
+    # X_1997_2024_preprocessed, X_2025_transformed = load_and_preprocess_and_save()
     # y_winrate, y = new_y_creator(1997)
     # df_for_model = get_X_y(X_preprocessed, y_winrate)
     # model, X_test_preprocessed, y_test = train_ML(LinearRegression(), df_for_model, 0.3)
@@ -177,12 +179,12 @@ if __name__ == '__main__':
 
 # DL tests
     print("\n")
-    # X_preprocessed = load_and_preprocess_and_save()
-    X_preprocessed = load_preprocessed_data_from_database()
+    X_1997_2024_preprocessed, X_2025_transformed = load_and_preprocess_and_save()
+    # X_1997_2024_preprocessed = load_preprocessed_data_from_database()
     print("\n")
 
     y_winrate, y_df = new_y_creator(1997)
-    X, keys, __ = get_all_seasons_all_teams_starters_stats(X_preprocessed, False)
+    X, keys, __ = get_all_seasons_all_teams_starters_stats(X_1997_2024_preprocessed, False)
     y_df_classé = pd.DataFrame(keys, columns=["PM"]).merge(y_winrate,
                                                            how="left",
                                                            on="PM")
