@@ -4,7 +4,7 @@ import pandas as pd
 
 # Import preprocessing
 from sklearn.impute import KNNImputer
-from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import RobustScaler, OneHotEncoder
 from params import *
 from ml_logic.registry import load_data_from_database, save_data
 
@@ -19,6 +19,8 @@ def preprocess_features(X: pd.DataFrame) -> np.ndarray:
     X_2025 = X.query("season == 2025")
 
     print("⏳ Preprocessing in progress... ⏳")
+
+    ### Preparing Data for Imputer and Scaler
 
     ## 1997-2024 :
     # Dropping useless columns
@@ -36,7 +38,6 @@ def preprocess_features(X: pd.DataFrame) -> np.ndarray:
     # Selecting only numerical columns
     X_2025_dropped_season_drop_num = X_2025_dropped_season_drop.select_dtypes(include="number")
 
-
     # Imputing NaN values
     imputer = KNNImputer().set_output(transform='pandas')
     imputer.fit(X_1997_2024_dropped_season_drop_num)
@@ -49,9 +50,34 @@ def preprocess_features(X: pd.DataFrame) -> np.ndarray:
     X_1997_2024_num = robust_scaler.transform(X_1997_2024_dropped_season_drop_imputed)
     X_2025_num = robust_scaler.transform(X_2025_dropped_season_drop_imputed)
 
-    # Concatenation to get back the non numerical columns
-    X_1997_2024_preprocessed = pd.concat([X_1997_2024_dropped[["season"]], X_1997_2024_dropped.select_dtypes(exclude="number"), X_1997_2024_num], axis=1)
-    X_2025_transformed = pd.concat([X_2025_dropped[["season"]], X_2025_dropped.select_dtypes(exclude="number"), X_2025_num], axis=1)
+    ### Preparing Data for one hot encoder
+
+    ## 1997-2024 :
+    X_1997_2024_pos = X_1997_2024[["pos"]]
+    ## 2025 :
+    X_2025_pos = X_2025[["pos"]]
+
+    # One hot encode the positions
+    ohe = OneHotEncoder(drop = "if_binary", # Doesn't create an extra column for binary features
+                        sparse_output = False, # Returns full matrixes with zeros where need be instead of sparse matrixes
+                        handle_unknown="ignore") # Useful to set everything to zero for unseen categories in the test set
+    ohe.fit(X_1997_2024_pos)
+    X_1997_2024_pos[ohe.get_feature_names_out()] = ohe.transform(X_1997_2024_pos)
+    X_1997_2024_pos.drop(columns="pos", inplace=True)
+    X_2025_pos[ohe.get_feature_names_out()] = ohe.transform(X_2025_pos)
+    X_2025_pos.drop(columns="pos", inplace=True)
+
+    # Concatenation to get back the non numerical columns + one hot encoded cat
+    X_1997_2024_preprocessed = pd.concat([X_1997_2024_dropped[["season"]],
+                                          X_1997_2024_dropped.select_dtypes(exclude="number"),
+                                          X_1997_2024_pos,
+                                          X_1997_2024_num],
+                                         axis=1)
+    X_2025_transformed = pd.concat([X_2025_dropped[["season"]],
+                                    X_2025_dropped.select_dtypes(exclude="number"),
+                                    X_2025_pos,
+                                    X_2025_num],
+                                   axis=1)
 
     print("✅ Data preprocessed (X from 1997 to 2024), with shape", X_1997_2024_preprocessed.shape)
     print("✅ Data transformed (2025), with shape", X_2025_transformed.shape)
@@ -63,3 +89,4 @@ def preprocess_features(X: pd.DataFrame) -> np.ndarray:
 if __name__ == "__main__":
     X = load_data_from_database()
     X_1997_2024_preprocessed, X_2025_transformed = preprocess_features(X)
+
