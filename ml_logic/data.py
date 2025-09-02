@@ -1,4 +1,3 @@
-from pathlib import Path
 import pandas as pd
 import numpy as np
 from params import *
@@ -149,11 +148,7 @@ def player_full_data_df(list_dataframe,year):
 
 def player_starting_5_data(dfs, year):
     return player_full_data_df(dfs, year).query("starting_5 == 1")
-git 
-from pathlib import Path
-import pandas as pd
-import numpy as np
-from params import *
+
 
 def new_y_creator(year):
 
@@ -311,10 +306,6 @@ def new_y_creator(year):
 # Tests
 if __name__ == "__main__":
 
-    dfs = load_data()
-
-    player_full_data = player_full_data_df(dfs, 1997)
-
-    y = new_y_creator(1997)
+    y_winrate_1997_2024, y_1997_2024, y_winrate_2025,y_2025 = new_y_creator(1997)
 
     print("Test good (✅ pour Flavian)")
