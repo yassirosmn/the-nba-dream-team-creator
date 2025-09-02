@@ -17,6 +17,9 @@ def load_csvs_and_save_data_to_database() -> None:
     print("⏳ Saving database locally... ⏳")
     df = load_data()
     X = player_full_data_df(df, 1997)
+    # Create "models "folder if not existing
+    all_data_folder = Path(DATABASE_PATH)
+    all_data_folder.mkdir(parents=True, exist_ok=True)
     X.to_pickle(f"{DATABASE_PATH}player_full_database.pkl")
     print("✅ Database saved locally !")
 
