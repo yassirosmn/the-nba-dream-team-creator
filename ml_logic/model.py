@@ -37,8 +37,7 @@ def initialize_deep_dense_model(X_train):
     #reg_l1 = regularizers.L1(0.01)
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     model = Sequential()
-    model.add(Input(shape = (40, 7)))
-
+    model.add(Input(shape = (np.shape(X_train)[1], np.shape(X_train)[2]))) #
     ### First layer
     model.add(layers.Dense(300, activation='relu'))
 
@@ -49,6 +48,7 @@ def initialize_deep_dense_model(X_train):
     model.add(layers.Dense(126,activation='relu'))
     model.add(layers.Dropout(rate= 0.2))
 
+    model.add(layers.Flatten()) #(40,)
     ### output layer
     model.add(layers.Dense(1, activation='relu'))
 
@@ -59,9 +59,10 @@ def initialize_deep_rnn_model(X_train):
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     ## RNN
     rnn = Sequential()
-    rnn.add(Input(shape=(X_train.shape[1],X_train.shape[2],1))),
-    rnn.add(layers.LSTM(50)),
-
+    rnn.add(Input(shape=(np.shape(X_train)[1], np.shape(X_train)[2]))),
+    rnn.add(layers.LSTM(126,return_sequences=True)),
+    rnn.add(layers.LSTM(64)),
+    rnn.add(layers.Dense(50))
     rnn.add(layers.Dense(1, activation="relu"))
     return rnn
 
@@ -70,8 +71,17 @@ def initialize_deep_cnn_model(X_train):
     '''instanciate and return the CNN architecture of your choice with less than 150,000 params'''
     # Conv1D
     cnn = Sequential()
-    cnn.add(Input(shape=(X_train.shape[1],X_train.shape[2],1))), #X_train.shape[1:]
-    cnn.add(layers.Conv1D(20, kernel_size=(1))),
+    cnn.add(Input(shape=(np.shape(X_train)[1], np.shape(X_train)[2]))), #(np.shape(X_train)[1], np.shape(X_train)[2])
+    cnn.add(layers.Conv1D(240, kernel_size=(1))),
+    cnn.add(layers.MaxPool1D(2))
+
+    cnn.add(layers.Conv1D(120, kernel_size=(1))),
+    cnn.add(layers.MaxPool1D(2))
+
+    cnn.add(layers.Conv1D(30, kernel_size=(1))),
+
+    cnn.add(layers.Flatten())
+    cnn.add(layers.Dense(30, activation= 'relu'))
     cnn.add(layers.Dense(1, activation="relu"))
     return cnn
 
@@ -84,13 +94,14 @@ def compile_deep_model(model):
     )
     return model
 
-def fit_deep_model(model,X_train,y_train,validation_data, batch_size = 32, epochs= 200):
+def fit_deep_model(model,X_train,y_train,validation_data, batch_size = 32, epochs= 200,verbose ='auto'):
     es = EarlyStopping(patience = 20, restore_best_weights=True)
     history = model.fit(X_train,
           y_train,
           validation_data= validation_data,
           batch_size = batch_size,
           epochs= epochs,
+          verbose = verbose,
           callbacks = [es])
     return history, model
 
