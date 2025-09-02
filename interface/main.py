@@ -7,7 +7,7 @@ from params import *
 from ml_logic.data import load_data, player_full_data_df, new_y_creator
 from ml_logic.model import initialize_model, fit_model, score_model,initialize_deep_dense_model, compile_deep_model, fit_deep_model, initialize_deep_cnn_model, initialize_deep_rnn_model
 from ml_logic.from_player_to_team import get_all_seasons_all_teams_starters_stats
-from ml_logic.registry import load_csvs_and_save_data_to_database, save_preprocessed_data, load_data_from_database, load_preprocessed_data_from_database
+from ml_logic.registry import load_csvs_and_save_data_to_database, save_data, load_data_from_database, load_preprocessed_data_from_database
 
 # Import preprocessing function
 from ml_logic.preprocessor import preprocess_features
@@ -29,7 +29,7 @@ def load_and_preprocess_and_save():
     # Process data
     X_preprocessed = preprocess_features(X)
     # Save preprocessed data to database
-    save_preprocessed_data(X_preprocessed)
+    save_data(X_preprocessed, "data_preprocessed")
 
     return X_preprocessed
 

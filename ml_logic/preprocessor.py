@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import RobustScaler
 from params import *
-from ml_logic.registry import load_data_from_database, save_preprocessed_data
+from ml_logic.registry import load_data_from_database, save_data
 
 
 def preprocess_features(X: pd.DataFrame) -> np.ndarray:
