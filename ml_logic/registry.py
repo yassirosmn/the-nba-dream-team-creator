@@ -5,6 +5,7 @@ import glob
 
 from ml_logic.data import load_data, player_full_data_df
 from params import *
+import tensorflow as tf
 from tensorflow import keras
 
 
@@ -103,8 +104,9 @@ def load_preprocessed_data_from_database() -> pd.DataFrame:
 
 def save_model(model, model_type_is_deep: bool = True) -> None:
     """
-    Persist trained model locally on the hard drive at f"{MODEL_PATH}_{timestamp}.h5"
-    - if MODEL_TARGET='mlflow', also persist it on MLflow instead of GCS (for unit 0703 only) --> unit 03 only
+    Saves trained model locally on the hard drive at :
+        - f"{MODEL_PATH}_{timestamp}.h5" if model is deep
+        - f"model_ml_{timestamp}.pkl"
     """
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
@@ -118,7 +120,8 @@ def save_model(model, model_type_is_deep: bool = True) -> None:
     if model_type_is_deep:
         ml_folder = Path(MODEL_PATH) / "deep"
         ml_folder.mkdir(parents=True, exist_ok=True)  # Creates folder if not existing
-        model.save(f"{MODEL_PATH}/deep/model_deep_{timestamp}.h5")
+
+        model.save(f"{MODEL_PATH}/deep/model_deep_{timestamp}.keras")
         print("✅ Model DL saved locally")
 
     else :
@@ -133,25 +136,16 @@ def save_model(model, model_type_is_deep: bool = True) -> None:
 
 def load_model(model_type_is_deep: bool = True) -> keras.Model:
     """
-    Return a saved model:
-    - locally (latest one in alphabetical order)
-    Return None (but do not Raise) if no model is found
-
+        Returns a locally saved model (latest one in alphabetical order)
+        Returns None (but do not Raise) if no model is found
     """
 
     if model_type_is_deep:
 
-        # Get the latest model version name by the timestamp on disk
-        local_model_paths = glob.glob(f"{MODEL_PATH}/deep/*")
+        model_deep = keras.models.load_model(f"{MODEL_PATH}deep/model_deep_20250902-190443.keras")
 
-        # Si aucun model trouvé
-        if not local_model_paths:
-            return None
-        most_recent_model_path_on_disk = sorted(local_model_paths)[-1]
-        latest_model_deep = keras.models.load_model(most_recent_model_path_on_disk)
-        print("✅ Model loaded from local disk")
+        return model_deep
 
-        return latest_model_deep
 
     else:
             folder = Path(f"{MODEL_PATH}/ml")
@@ -173,7 +167,7 @@ def load_model(model_type_is_deep: bool = True) -> keras.Model:
 if __name__ == "__main__":
     # from ml_logic.preprocessor import preprocess_features
     # # Save database
-    load_csvs_and_save_data_to_database()
+    # load_csvs_and_save_data_to_database()
 
     # # Load dfs
     # dfs,_,_,_,_ = load_dfs_from_database()
@@ -191,16 +185,16 @@ if __name__ == "__main__":
     # save_preprocessed_data(X_prep)
 
     # # Load preprocessed data
-    # X_preprocessed = load_preprocessed_data_from_database()
+    X_preprocessed = load_preprocessed_data_from_database()
     # print(f"\n ➡️ ➡️  Displaying first rows :\n{X_preprocessed.head()}")
 
-    # from ml_logic.data import new_y_creator
-    # from interface.main import get_X_y, train_ML
-    # y_winrate, y = new_y_creator(1997)
-    # df_for_model = get_X_y(X_preprocessed, y_winrate)
-    # from sklearn.linear_model import LinearRegression
-    # model, X_test_preprocessed, y_test = train_ML(LinearRegression(), df_for_model, 0.3)
-    # save_model(model, False)
+    from ml_logic.data import new_y_creator
+    from interface.main import get_X_y, train_ML
+    y_winrate, y = new_y_creator(1997)
+    df_for_model = get_X_y(X_preprocessed, y_winrate)
+    from sklearn.linear_model import LinearRegression
+    model, X_test_preprocessed, y_test = train_ML(LinearRegression(), df_for_model, 0.3)
+    save_model(model, False)
 
     # Test de load model
     # model = load_model(False)
