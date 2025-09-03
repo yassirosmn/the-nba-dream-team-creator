@@ -54,7 +54,6 @@ def get_X_y(X_preprocessed, y)-> pd.DataFrame:
 
     return df_preprocessed_teams_with_key_merged_y_drop_key
 
-
 def train_ML(model_type, df_preprocessed_teams_with_key_merged_y_drop_key, split_ratio):
     """
         Trains model
@@ -129,7 +128,7 @@ def evaluate_ML_model(model, X_test, y_test) -> pd.DataFrame:
     """
     print("▶️ evaluate_ML() begin")
     df_score = model.score(X_test, y_test)
-    print("✅ evaluate_ML() done")
+    print(f"✅ evaluate_{model}_ML() done")
     print("💯 Score: ", df_score)
     return df_score
 
@@ -159,65 +158,97 @@ def pred(model, X_new_preprocessed: pd.DataFrame=None):
 
 if __name__ == '__main__':
 
-# DL tests
-    print("\n")
-    X_1997_2024_preprocessed, X_2025_transformed = load_and_preprocess_and_save()
-    # X_1997_2024_preprocessed = load_preprocessed_data_from_database()
-    print("\n")
+# ML tests
+    from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+    from sklearn.neighbors import KNeighborsRegressor
+    from sklearn.svm import SVR
+    from sklearn.tree import DecisionTreeRegressor
+    from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, AdaBoostRegressor, GradientBoostingRegressor, VotingRegressor
+    from xgboost import XGBRegressor
 
+    X_1997_2024_preprocessed, X_2025_transformed = load_and_preprocess_and_save()
     y_winrate_1997_2024_df, y_1997_2024_df, y_winrate_2025_df, y_2025_df = new_y_creator(1997)
 
-    y_1997_2024= y_1997_2024_df["global_score"]            #pandas_series
-    y_2025 = y_2025_df["global_score"]                     #pandas_series
+    df_train = get_X_y(X_1997_2024_preprocessed, y_winrate_1997_2024_df)
+    df_test = get_X_y(X_2025_transformed, y_winrate_2025_df)
 
-    y_winrate_1997_2024 = y_winrate_1997_2024_df['winrate'] #pandas_series
-    y_winrate_2025 = y_winrate_2025_df['winrate']           #pandas_series
+    list_of_reg_models = [LinearRegression(), Ridge(), Lasso(), ElasticNet(), KNeighborsRegressor(),
+                        SVR(),DecisionTreeRegressor(), BaggingRegressor(),
+                        RandomForestRegressor(), AdaBoostRegressor(), GradientBoostingRegressor(),
+                        XGBRegressor()]
 
-    X_1997_2024, _, __ = get_all_seasons_all_teams_starters_stats(X_1997_2024_preprocessed, False)
-    X_2025, _, __ = get_all_seasons_all_teams_starters_stats(X_2025_transformed, False)
-    print("✅ X and y created")
-    print("\n")
+    scores = {}
+    for m in list_of_reg_models :
+        model = m
+        model = train_ML(model, df_train, split_ratio=0.1)
+        score = evaluate_ML_model(model,
+                                  df_test.iloc[:, :-1],
+                                  df_test.iloc[:, -1])
+        scores[m] = score
 
-    model, history = train_DL("dense",
-                              np.array(X_1997_2024),
-                              np.array(y_winrate_1997_2024),
-                              split_ratio=0.1,
-                              lr=0.005,
-                              epsilon=3e-2)
+    print(scores)
 
-    print("🔎 loss : ", history.history["loss"][-1])
-    print("🔎 mae : ", history.history["mae"][-1])
-    print("🔎 val_loss : ", history.history["val_loss"][-1])
-    print("🔎 val_mae : ", history.history["val_mae"][-1])
 
-    save_model(model)
 
-    print("\n")
-    score = evaluate_DL_model(model,
-                                np.array(X_2025),
-                                np.array(y_winrate_2025))
 
-    # Prédiction de toute les lignes du X_test :
-    print("\n")
-    y_preds = []
-    y_trues = []
-    for row in range(len(X_2025)):
-        X_new = np.array(X_2025)[row:row+1, :, :] # Test de pred d'une ligne au pif
-        y_preds.append(pred(model, X_new)[0][0])
-        y_trues.append(np.array(y_winrate_2025)[row:row+1][0])
-    df_trues_preds = pd.DataFrame()
-    df_trues_preds["y_trues"] = y_trues
-    df_trues_preds["y_preds"] = y_preds
-    df_trues_preds["diff"] = df_trues_preds["y_trues"]-df_trues_preds["y_preds"]
+# DL tests
+    # print("\n")
+    # X_1997_2024_preprocessed, X_2025_transformed = load_and_preprocess_and_save()
+    # # X_1997_2024_preprocessed = load_preprocessed_data_from_database()
+    # print("\n")
 
-    rmse = (np.mean((df_trues_preds["y_trues"]-df_trues_preds["y_preds"])**2))**0.5
-    print("💯 RMSE = ", rmse)
+    # y_winrate_1997_2024_df, y_1997_2024_df, y_winrate_2025_df, y_2025_df = new_y_creator(1997)
 
-    from sklearn.metrics import r2_score
-    r2 = r2_score(df_trues_preds["y_trues"], df_trues_preds["y_preds"])
-    print("💯 r2 = ", r2)
+    # y_1997_2024= y_1997_2024_df["global_score"]            #pandas_series
+    # y_2025 = y_2025_df["global_score"]                     #pandas_series
 
-    # # Prédiction d'une seule ligne :
-    # X_new = X_test_preprocessed[27:28, :, :] # Test de pred d'une ligne au pif
-    # y_pred = pred(model, X_new)
-    # print("🏀 y_true : ", y_test[27:28])
+    # y_winrate_1997_2024 = y_winrate_1997_2024_df['winrate'] #pandas_series
+    # y_winrate_2025 = y_winrate_2025_df['winrate']           #pandas_series
+
+    # X_1997_2024, _, __ = get_all_seasons_all_teams_starters_stats(X_1997_2024_preprocessed, False)
+    # X_2025, _, __ = get_all_seasons_all_teams_starters_stats(X_2025_transformed, False)
+    # print("✅ X and y created")
+    # print("\n")
+
+    # model, history = train_DL("dense",
+    #                           np.array(X_1997_2024),
+    #                           np.array(y_winrate_1997_2024),
+    #                           split_ratio=0.1,
+    #                           lr=0.005,
+    #                           epsilon=3e-2)
+
+    # print("🔎 loss : ", history.history["loss"][-1])
+    # print("🔎 mae : ", history.history["mae"][-1])
+    # print("🔎 val_loss : ", history.history["val_loss"][-1])
+    # print("🔎 val_mae : ", history.history["val_mae"][-1])
+
+    # save_model(model)
+
+    # print("\n")
+    # score = evaluate_DL_model(model,
+    #                             np.array(X_2025),
+    #                             np.array(y_winrate_2025))
+
+    # # Prédiction de toute les lignes du X_test :
+    # print("\n")
+    # y_preds = []
+    # y_trues = []
+    # for row in range(len(X_2025)):
+    #     X_new = np.array(X_2025)[row:row+1, :, :] # Test de pred d'une ligne au pif
+    #     y_preds.append(pred(model, X_new)[0][0])
+    #     y_trues.append(np.array(y_winrate_2025)[row:row+1][0])
+    # df_trues_preds = pd.DataFrame()
+    # df_trues_preds["y_trues"] = y_trues
+    # df_trues_preds["y_preds"] = y_preds
+    # df_trues_preds["diff"] = df_trues_preds["y_trues"]-df_trues_preds["y_preds"]
+
+    # rmse = (np.mean((df_trues_preds["y_trues"]-df_trues_preds["y_preds"])**2))**0.5
+    # print("💯 RMSE = ", rmse)
+
+    # from sklearn.metrics import r2_score
+    # r2 = r2_score(df_trues_preds["y_trues"], df_trues_preds["y_preds"])
+    # print("💯 r2 = ", r2)
+
+    # X_new = np.array(X_2025)[15:15+1, :, :]
+    # print(X_new)
+    # print(np.shape(X_new))
