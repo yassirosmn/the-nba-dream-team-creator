@@ -73,4 +73,4 @@ STATS_TO_KEEP = ['pos_C', 'pos_PF','pos_PG', 'pos_SF', 'pos_SG', 'ft', 'orb', 'd
 #                 'fg_percent_from_x3p_range', 'percent_dunks_of_fga', 'num_of_dunks',
 #                 'percent_corner_3s_of_3pa', 'ht_in_in', 'wt']
 
-                # ['ft', 'orb', 'drb', 'ast', 'stl', 'blk', 'tov', 'pts']
+
