@@ -7,8 +7,8 @@ pandas==2.3.2
 matplotlib==3.10.5
 seaborn==0.13.2
 scikit-learn==1.7.1
-keras==3.11.3
-tensorflow==2.20.0
+#keras==3.11.3
+#tensorflow==2.20.0
 plotly==6.3.0
 xgboost==3.0.4
 pathlib==1.0.1
