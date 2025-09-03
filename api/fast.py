@@ -5,23 +5,12 @@ from ml_logic import registry, from_player_to_team
 from params import *
 
 app = FastAPI()
-app.state.model = registry.load_model(model_type_is_deep=False)
+app.state.model = registry.load_model(model_type_is_deep=True)
 
 
 
 @app.get("/predict")
-def predict(
-        player_C_name: str,
-        player_C_team: str,
-        player_SG_name: str,
-        player_SG_team: str,
-        player_PF_name: str,
-        player_PF_team: str,
-        player_PG_name: str,
-        player_PG_team: str,
-        player_SF_name: str,
-        player_SF_team: str,
-    ):
+def predict(dream_team):
     """
         Make a nba score prediction
     """
@@ -41,20 +30,12 @@ def predict(
     # ######                      TRANSFORM LE X_new                                          #####
     # ###############
 
-    # Create Dico of players
-    Dico_players_selected =  {
-            player_C_name: player_C_team,
-            player_SG_name: player_SG_team,
-            player_PF_name: player_PF_team,
-            player_PG_name: player_PG_team,
-            player_SF_name: player_SF_team,
-        }
 
     # Get players stats
-    X_new_embedded, X_new_flattened = from_player_to_team.get_new_team_stats_per_season(Dico_players_selected, X_2025_scaled)
+    X_new_embedded, X_new_flattened = from_player_to_team.get_new_team_stats_per_season(dream_team, X_2025_scaled)
 
     ##################  Predict (contains the model loading)  ##################
-    y_pred = app.state.model.predict(X_new_flattened)
+    y_pred = app.state.model.predict(X_new_embedded)
 
     # Show prediction
     return {

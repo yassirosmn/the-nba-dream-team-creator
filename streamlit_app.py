@@ -54,7 +54,7 @@ def load_pickles_to_df(pos):
 
 def team_player_picker(df: pd.DataFrame, pos_label: str, key_prefix: str):
     """Render two selectboxes side-by-side: Team (left) -> Player (right)."""
-    teams = sorted(df["team"].dropna().unique())
+    teams = sorted(df["team"].unique())
 
     col_team, col_player = st.columns([1, 2], vertical_alignment="center")
     with col_team:
@@ -66,7 +66,6 @@ def team_player_picker(df: pd.DataFrame, pos_label: str, key_prefix: str):
           .dropna()
           .sort_values()
           .unique()
-          .tolist()
     )
 
     # Key depends on team so the player box resets when team changes
@@ -108,6 +107,8 @@ if st.button('Will you win the next NBA season?'):
     #response = requests.get(url, params=params)
 
     response = predict(selected_dream_team)
+
+    response = response["Your team probability to win the NBA is"]
 
     if response > 0.3:
 
