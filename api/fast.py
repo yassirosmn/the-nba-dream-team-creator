@@ -1,25 +1,13 @@
 import pandas as pd
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from ml_logic import registry, preprocessor, from_player_to_team
+from ml_logic import registry, from_player_to_team
+from params import *
 
 app = FastAPI()
 app.state.model = registry.load_model(model_type_is_deep=False)
 
-'''
-https://www.notion.so/marcus-pernegger/Cr-ation-de-l-API-25d0f87e23cf8086a730e211a263c071?source=copy_link
 
-
-# Used for taxifare, to check if needed
-    # Comment taxifare: Allowing all middleware is optional, but good practice for dev purposes
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[“*”],  # Allows all origins
-    allow_credentials=True,
-    allow_methods=[“*”],  # Allows all methods
-    allow_headers=[“*”],  # Allows all headers
-)
-'''
 
 @app.get("/predict")
 def predict(
@@ -37,43 +25,40 @@ def predict(
     """
         Make a nba score prediction
     """
+    # Load 2025 scaled data
+    try:
+        X_2025_scaled = pd.read_pickle(f"{DATABASE_PATH}X_2025_transformed.pkl")
+        print("✅ Scaled 2025 loaded from local !", X_2025_scaled.head())
 
+    except:
+            print(f"\n❌❌ No 2025 scaled data found at path : {DATABASE_PATH}")
 
-    ###############                                                             #################
-    ######                      CHANGER LA PARTIE DATA => IMPORTER SCALER                   #####
-    ######                      TRANSFORM LE X_new                                          #####
-    ###############
-
-
-
-
-    # Load preprocessed data
-    X_preprocessed = registry.load_preprocessed_data_from_database()
-
-    # Load DFs from database
+    # # Load DFs from database
     df_2025_C, df_2025_SG, df_2025_PF, df_2025_PG, df_2025_SF = registry.load_dfs_from_database()
 
+    # ###############                                                             #################
+    # ######                      CHANGER LA PARTIE DATA => IMPORTER SCALER                   #####
+    # ######                      TRANSFORM LE X_new                                          #####
+    # ###############
+
+    # Create Dico of players
     Dico_players_selected =  {
-            player_C_name: player_C_team,       # To do:
-            player_SG_name: player_SG_team,         # Create function that lets you select combination of player name and position -> player_C, player_SG, player_PF, player_PG, player_SF
-            player_PF_name: player_PF_team,         # User selects the players that will be X_new
+            player_C_name: player_C_team,
+            player_SG_name: player_SG_team,
+            player_PF_name: player_PF_team,
             player_PG_name: player_PG_team,
             player_SF_name: player_SF_team,
         }
 
     # Get players stats
-    X_new_embedded, X_new_flattened = from_player_to_team.get_new_team_stats_per_season(Dico_players_selected, X_preprocessed)
+    X_new_embedded, X_new_flattened = from_player_to_team.get_new_team_stats_per_season(Dico_players_selected, X_2025_scaled)
 
-
-
-
-
-
-    #Predict (contains the model loading)
+    ##################  Predict (contains the model loading)  ##################
     y_pred = app.state.model.predict(X_new_flattened)
 
+    # Show prediction
     return {
-            "Your team probability to win the NBA is:" : round(float(y_pred[0]), 2)
+            "Your team probability to win the NBA is" : round(float(y_pred[0]), 2)
             }
 
 
