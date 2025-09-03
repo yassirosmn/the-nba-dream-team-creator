@@ -1,7 +1,7 @@
 import pandas as pd
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from ml_logic import registry, preprocessor, from_player_to_team
+from ml_logic import registry, from_player_to_team
 from params import *
 
 app = FastAPI()
@@ -58,7 +58,7 @@ def predict(
 
     # Show prediction
     return {
-            "Your team probability to win the NBA is:" : round(float(y_pred[0]), 2)
+            "Your team probability to win the NBA is" : round(float(y_pred[0]), 2)
             }
 
 
