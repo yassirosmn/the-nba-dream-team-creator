@@ -1,19 +1,20 @@
 import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from ml_logic import registry, from_player_to_team
 from params import *
 
 app = FastAPI()
-app.state.model = registry.load_model(model_type_is_deep=True)
+app.state.model = registry.load_model(model_type_is_deep=False)
 
 
 
-@app.get("/predict")
-def predict(dream_team):
+@app.post("/predict")
+async def predict(request: Request):
     """
         Make a nba score prediction
     """
+    dream_team = await request.json()
     # Load 2025 scaled data
     try:
         X_2025_scaled = pd.read_pickle(f"{DATABASE_PATH}X_2025_transformed.pkl")
@@ -32,15 +33,14 @@ def predict(dream_team):
 
 
     # Get players stats
-    X_new_embedded, X_new_flattened = from_player_to_team.get_new_team_stats_per_season(dream_team, X_2025_scaled)
+    #X_new_embedded,
+    X_new_flattened = from_player_to_team.get_new_team_stats_per_season(dream_team, X_2025_scaled)
 
     ##################  Predict (contains the model loading)  ##################
-    y_pred = app.state.model.predict(X_new_embedded)
+    y_pred = app.state.model.predict(X_new_flattened)
 
     # Show prediction
-    return {
-            "Your team probability to win the NBA is" : round(float(y_pred[0]), 2)
-            }
+    return round(float(y_pred[0]), 2)
 
 
 @app.get("/")

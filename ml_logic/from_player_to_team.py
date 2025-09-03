@@ -43,11 +43,11 @@ def get_new_team_stats_per_season(dico_player_and_team: dict,
     ## create list for embedding
     the_n_players = the_n_players[STATS_TO_KEEP]
     the_n_players_list = the_n_players.values.tolist()
-    the_n_players_embedded = player_embedder_transform(np.array(the_n_players_list))
-    the_n_players_embedded_flattened = np.expand_dims(the_n_players_embedded.reshape(5*13,7), 0)
+    #the_n_players_embedded = player_embedder_transform(np.array(the_n_players_list))
+    #the_n_players_embedded_flattened = np.expand_dims(the_n_players_embedded.reshape(5*13,7), 0)
     # Flatten df for ML
     the_n_players_flattened = flatten_df(the_n_players)
-    return the_n_players_embedded_flattened, the_n_players_flattened
+    return the_n_players_flattened #, the_n_players_embedded_flattened
 
 #########################
 

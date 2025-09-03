@@ -7,8 +7,8 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # 0 = tout, 1 = warnings, 2 = erreurs,
 
 from ml_logic.data import load_data, player_full_data_df
 from params import *
-import tensorflow as tf
-tf.get_logger().setLevel("ERROR")
+# import tensorflow as tf
+# tf.get_logger().setLevel("ERROR")
 
 
 
@@ -142,7 +142,7 @@ def save_model(model, model_type_is_deep: bool = True) -> None:
 
     return None
 
-def load_model(model_type_is_deep: bool = True) -> tf.keras.Model:
+def load_model(model_type_is_deep: bool = True): # tf.keras.Model
     """
         Returns a locally saved model (latest one in alphabetical order)
         Returns None (but do not Raise) if no model is found

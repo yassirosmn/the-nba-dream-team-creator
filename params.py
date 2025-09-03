@@ -19,9 +19,6 @@ FILE_PATH=Path(os.environ.get("FILE_PATH", "raw_data/"))
 # Error message if file_path invalid
 assert FILE_PATH.exists(), "file_path does not exist"
 
-# Streamlit
-BASE_URL = "http://localhost:8000"
-
 # to do once done
 ## api
 ## streamlit cloud
@@ -72,5 +69,3 @@ STATS_TO_KEEP = ['pos_C', 'pos_PF','pos_PG', 'pos_SF', 'pos_SG', 'ft', 'orb', 'd
 #                 'fg_percent_from_x10_16_range', 'fg_percent_from_x16_3p_range',
 #                 'fg_percent_from_x3p_range', 'percent_dunks_of_fga', 'num_of_dunks',
 #                 'percent_corner_3s_of_3pa', 'ht_in_in', 'wt']
-
-
